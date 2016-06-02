@@ -39,19 +39,14 @@ int xPos (int punt) {
 
     if (punt == 10 || punt == 11 || punt == 12)
         return 0;
-
     if (punt == 1 || punt == 9)
         return 4;
-
     if (punt == 2 || punt == 8)
         return 6;
-
     if (punt == 3 || punt == 7)
         return 8;
-
     if (punt == 4 || punt == 5 || punt == 6)
         return 12;
-
     return 99;
 }
 
@@ -59,38 +54,44 @@ int yPos (int punt) {
 
     if (punt == 1 || punt == 2 || punt == 3)
         return 12;
-
     if (punt == 4 || punt == 12)    
         return 8;
-
     if (punt == 5 || punt == 11)
         return 6;
-
     if (punt == 6 || punt == 10)
         return 4;
-
     if (punt == 7 || punt == 8 || punt 9)
         return 0;
-
     return 99;
 }
 
-int richtingPunt (int punt) {
+int richtingStationBegin (int punt) {
 
     if (punt == 1 || punt == 2 || punt == 3)
         return 0;
-
     if (punt == 4 || punt == 5 || punt == 6)
         return 1;
-
     if (punt == 7 || punt == 8 || punt == 9)
         return 2;
-
     if (punt == 10 || punt == 11 || punt == 12)
         return 3;
-
     return 99;
 }
+
+int richtingStationHalverwege (int punt) {
+
+    if (punt == 1 || punt == 2 || punt == 3)
+        return 2;
+    if (punt == 4 || punt == 5 || punt == 6)
+        return 4;
+    if (punt == 7 || punt == 8 || punt == 9)
+        return 0;
+    if (punt == 10 || punt == 11 || punt == 12)
+        return 1;
+    return 99;
+}
+
+
 
 int vulPlattegrond () {
 
@@ -140,108 +141,93 @@ int vulPlattegrond () {
 }
 
 
+float routeLength (int startPunt, int eindPunt) {
+
+    int i, j, stap;
+    int huidigePos[3]; /* x, y, richting */
+    int bochten = 0, rechtPad = 0;
 
 
+    huidigePos[0] = xPos(startPunt);
+    huidigePos[1] = yPos(startPunt);
+    huidigePos[2] = richtingPunt(startPunt);
+
+    stap = plattegrond[xPos(startPunt)][yPos(startPunt)];
 
 
-int loop(int startpunt, int eindpunt)
-{
-    int i = 0, j = 0, k = 0; /*Willekeurige integers om te doorlopen in een lus*/
-    int startc[2]; /*Array met startpuntcoordinaten*/
-    int eindc[2]; /*Array met eindpuntcoordinaten*/
-    int punt[2]; /*Array met de coordinaten van het pad om terug te komen*/
-    int vorigerichting = 0; /*Om zo min mogelijk bochten te maken in de route*/
-    int bochten = 0, rechten = 0;
-
-    /*De bestemming krijgt waarde i, ofwel 1*/
-    plattegrond[eindc[0]][eindc[1]] = k;
-
-    
-
-    if (k < 90)
-    {
-        /*Spring naar het eindpunt met de punt*/
-        punt[0] = startc[0];
-        punt[1] = startc[1];
-        while(k > 3)
+    while(stap > 3)
         {
             /*Voorkeursburen*/
-            /*Voorkeursbuur 1*/
-            if ((punt[0] < 11) && (plattegrond[punt[0]+2][punt[1]] == k-2) && (plattegrond[punt[0]+1][punt[1]] == k-1) && (vorigerichting == 1))
+            if ((huidigePos[0] < 11) && (plattegrond[huidigePos[0]+2][huidigePos[1]] == stap-2) && (plattegrond[huidigePos[0]+1][huidigePos[1]] == stap-1) && (vorigerichting == 3))
             {
-                rechten++;
-                k = k - 2;
-                /*Punt doorschuiven*/
-                punt[0] = punt[0] + 2;
+                /*  TODO send add straight line command */
+                rechtPad++;
+                stap -= 2;
+                huidigePos[0] += 2;
             }
-            /*Voorkeursbuur 2*/
-            else if ((punt[0] > 1) && (plattegrond[punt[0]-2][punt[1]] == k-2) && (plattegrond[punt[0]-1][punt[1]] == k-1) && (vorigerichting == 2))
+            else if ((huidigePos[0] > 1) && (plattegrond[huidigePos[0]-2][huidigePos[1]] == stap-2) && (plattegrond[huidigePos[0]-1][huidigePos[1]] == stap-1) && (vorigerichting == 1))
             {
-                rechten++;
-                k = k - 2;
-                /*Punt doorschuiven*/
-                punt[0] = punt[0] - 2;
+                /*  TODO send add straight line command */
+                rechtPad++;
+                stap -= 2;
+                huidigePos[0] -= 2;
             }
-            /*Voorkeursbuur 3*/
-            else if ((punt[1] < 11) && (plattegrond[punt[0]][punt[1]+2] == k-2) && (plattegrond[punt[0]][punt[1]+1] == k-1) && (vorigerichting == 3))
+            else if ((huidigePos[1] < 11) && (plattegrond[huidigePos[0]][huidigePos[1]+2] == stap-2) && (plattegrond[huidigePos[0]][huidigePos[1]+1] == stap-1) && (vorigerichting == 2))
             {
-                rechten++;
-                k = k - 2;
-                /*Punt doorschuiven*/
-                punt[1] = punt[1] + 2;
+                /*  TODO send add straight line command */
+                rechtPad++;
+                stap -= 2;
+                huidigePos[1] += 2;
             }
-            /*Voorkeursbuur 4*/
-            else if ((punt[1] > 1) && (plattegrond[punt[0]][punt[1]-2] == k-2) && (plattegrond[punt[0]][punt[1]-1] == k-1) && (vorigerichting == 4))
+            else if ((huidigePos[1] > 1) && (plattegrond[huidigePos[0]][huidigePos[1]-2] == stap-2) && (plattegrond[huidigePos[0]][huidigePos[1]-1] == stap-1) && (vorigerichting == 0))
             {
-                rechten++;
-                k = k - 2;
-                /*Punt doorschuiven*/
-                punt[1] = punt[1] - 2;
+                /*  TODO send add straight line command */
+                rechtPad++;
+                stap -= 2;
+                huidigePos[1] -= 2;
             }
+            /* VANAF HIER NOG RICHTINGEN DOEN!  */
+            else if ((huidigePos[0] < 11) && (plattegrond[huidigePos[0]+2][huidigePos[1]] == stap-2) && (plattegrond[huidigePos[0]+1][huidigePos[1]] == stap-1))
+            {
 
-            /*Standaardlijstje buren*/
-            /*Buur 1*/
-            else if ((punt[0] < 11) && (plattegrond[punt[0]+2][punt[1]] == k-2) && (plattegrond[punt[0]+1][punt[1]] == k-1))
-            {
                 bochten++;
-                rechten++;
-                k = k - 2;
+                rechtPad++;
+                stap -= 2;
+
                 vorigerichting = 1;
-                /*Punt doorschuiven*/
-                punt[0] = punt[0] + 2;
+                huidigePos[0] += 2;
             }
-            /*Buur 2*/
-            else if ((punt[0] > 1) && (plattegrond[punt[0]-2][punt[1]] == k-2) && (plattegrond[punt[0]-1][punt[1]] == k-1))
+            else if ((huidigePos[0] > 1) && (plattegrond[huidigePos[ 0]-2][huidigePos[ 1]] == stap-2) && (plattegrond[huidigePos[ 0]-1][huidigePos[ 1]] == stap-1))
             {
                 bochten++;
-                rechten++;
-                k = k - 2;
+                rechtPad++;
+                stap -= 2;
                 vorigerichting = 2;
-                /*Punt doorschuiven*/
-                punt[0] = punt[0] - 2;
+                huidigePos[ 0] -= 2;
             }
-            /*Buur 3*/
-            else if ((punt[1] < 11) && (plattegrond[punt[0]][punt[1]+2] == k-2) && (plattegrond[punt[0]][punt[1]+1] == k-1))
+            else if ((huidigePos[ 1] < 11) && (plattegrond[huidigePos[ 0]][huidigePos[ 1]+2] == stap-2) && (plattegrond[huidigePos[ 0]][huidigePos[ 1]+1] == stap-1))
             {
                 bochten++;
-                rechten++;
-                k = k - 2;
+                rechtPad++;
+                stap -= 2;
                 vorigerichting = 3;
-                /*Punt doorschuiven*/
-                punt[1] = punt[1] + 2;
+                huidigePos[1] += 2;
             }
-            /*Buur 4*/
-            else if ((punt[1] > 1) && (plattegrond[punt[0]][punt[1]-2] == k-2) && (plattegrond[punt[0]][punt[1]-1] == k-1))
+            else if ((huidigePos[ 1] > 1) && (plattegrond[huidigePos[ 0]][huidigePos[ 1]-2] == stap-2) && (plattegrond[huidigePos[ 0]][huidigePos[ 1]-1] == stap-1))
             {
                 bochten++;
-                rechten++;
-                k = k - 2;
+                rechtPad++;
+                stap -= 2;
+
                 vorigerichting = 4;
-                /*Punt doorschuiven*/
-                punt[1] = punt[1] - 2;
+                huidigePos[1] -= 2;
             }
         }
-    }
+
+
     /*Lengte terugsturen*/
     return (BOCHTWEGING*bochten + WEGENWEGING*rechten);
+
+
 }
+

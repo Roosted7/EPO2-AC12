@@ -14,22 +14,23 @@
 int stationsbereikt = 0;
 int achteruit = 0;
 int vorigerichting = 0; /*Om zo min mogelijk bochten te maken in de route*/
-int plattegrond[13][13];
+int plattegrond[13][13] =
+{
+    { -1, -1, -1, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1},
+    { -1, -1, -1, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1},
+    { -1, -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1},
+    { -1, -1,  0, -1,  0, -1,  0, -1,  0, -1,  0, -1, -1},
+    {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+    { -1, -1,  0, -1,  0, -1,  0, -1,  0, -1,  0, -1, -1},
+    {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+    { -1, -1,  0, -1,  0, -1,  0, -1,  0, -1,  0, -1, -1},
+    {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+    { -1, -1,  0, -1,  0, -1,  0, -1,  0, -1,  0, -1, -1},
+    { -1, -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1},
+    { -1, -1, -1, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1},
+    { -1, -1, -1, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1}
+};
 
-void nulPlattegrond () {
-    int i, j;
-    
-    for (i=0; i<13; i++)
-    {
-        for (j=0; j<13; j++)
-        {
-            if (plattegrond[i][j] > 0)
-            {
-                plattegrond[i][j] = 0;
-            }
-        }
-    }
-}
 
 int xPos (int punt) {
 
@@ -56,7 +57,7 @@ int yPos (int punt) {
         return 6;
     if (punt == 6 || punt == 10)
         return 4;
-    if (punt == 7 || punt == 8 || punt 9)
+    if (punt == 7 || punt == 8 || punt == 9)
         return 0;
     return 99;
 }
@@ -64,11 +65,11 @@ int yPos (int punt) {
 int richtingStationBegin (int punt) {
 
     if (punt == 1 || punt == 2 || punt == 3)
-        return 0;
-    if (punt == 4 || punt == 5 || punt == 6)
-        return 1;
-    if (punt == 7 || punt == 8 || punt == 9)
         return 2;
+    if (punt == 4 || punt == 5 || punt == 6)
+        return 4;
+    if (punt == 7 || punt == 8 || punt == 9)
+        return 1;
     if (punt == 10 || punt == 11 || punt == 12)
         return 3;
     return 99;
@@ -77,230 +78,68 @@ int richtingStationBegin (int punt) {
 int richtingStationHalverwege (int punt) {
 
     if (punt == 1 || punt == 2 || punt == 3)
-        return 2;
+        return 1;
     if (punt == 4 || punt == 5 || punt == 6)
         return 4;
     if (punt == 7 || punt == 8 || punt == 9)
-        return 0;
+        return 2;
     if (punt == 10 || punt == 11 || punt == 12)
-        return 1;
+        return 4;
     return 99;
 }
 
-void leegPlattegrond () {
-    plattegrond[13][13] ={
-        { -1, -1, -1, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1},
-        { -1, -1, -1, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1},
-        { -1, -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1},
-        { -1, -1,  0, -1,  0, -1,  0, -1,  0, -1,  0, -1, -1},
-        {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        { -1, -1,  0, -1,  0, -1,  0, -1,  0, -1,  0, -1, -1},
-        {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        { -1, -1,  0, -1,  0, -1,  0, -1,  0, -1,  0, -1, -1},
-        {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        { -1, -1,  0, -1,  0, -1,  0, -1,  0, -1,  0, -1, -1},
-        { -1, -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1},
-        { -1, -1, -1, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1},
-        { -1, -1, -1, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1}
-    };
+void nulPlattegrond () {
+    int i, j;
+    
+    for (i=0; i<13; i++)
+    {
+        for (j=0; j<13; j++)
+        {
+            if (plattegrond[i][j] > 0)
+            {
+                plattegrond[i][j] = 0;
+            }
+        }
+    }
 }
 
+void vulPlattegrond(int startc[], int eindc[]) {
 
-int loop(int startpunt, int eindpunt)
-{
-    int i = 0, j = 0, k = 0; /*Willekeurige integers om te doorlopen in een lus*/
-    int startc[2]; /*Array met startpuntcoordinaten*/
-    int eindc[2]; /*Array met eindpuntcoordinaten*/
-    int punt[2]; /*Array met de coordinaten van het pad om terug te komen*/
-    int vorigerichting = 0; /*Om zo min mogelijk bochten te maken in de route*/
-    int bochten = 0, rechten = 0;
+    int i, j, k;
 
     nulPlattegrond();
 
-
-    k = 1;
-
-    /*Coordinaten toewijzen*/
-    switch(startpunt)
-    {
-    case 1 :
-        startc[0] = 12;
-        startc[1] = 4;
-        vorigerichting = 2;
-        break;
-    case 2 :
-        startc[0] = 12;
-        startc[1] = 6;
-        vorigerichting = 2;
-        break;
-    case 3 :
-        startc[0] = 12;
-        startc[1] = 8;
-        vorigerichting = 2;
-        break;
-    case 4 :
-        startc[0] = 8;
-        startc[1] = 12;
-        vorigerichting = 4;
-        break;
-    case 5 :
-        startc[0] = 6;
-        startc[1] = 12;
-        vorigerichting = 4;
-        break;
-    case 6 :
-        startc[0] = 4;
-        startc[1] = 12;
-        vorigerichting = 4;
-        break;
-    case 7 :
-        startc[0] = 0;
-        startc[1] = 8;
-        vorigerichting = 1;
-        break;
-    case 8 :
-        startc[0] = 0;
-        startc[1] = 6;
-        vorigerichting = 1;
-        break;
-    case 9 :
-        startc[0] = 0;
-        startc[1] = 4;
-        vorigerichting = 1;
-        break;
-    case 10 :
-        startc[0] = 4;
-        startc[1] = 0;
-        vorigerichting = 3;
-        break;
-    case 11 :
-        startc[0] = 6;
-        startc[1] = 0;
-        vorigerichting = 3;
-        break;
-    case 12 :
-        startc[0] = 8;
-        startc[1] = 0;
-        vorigerichting = 3;
-        break;
-    default :
-        /*Foutmelding door onbekend startpunt*/
-        printf("\nFATALE FOUT!\n");
-        printf("\tOnbekend startpunt\n");
-        /*Voorkom dat de handel vastloopt*/
-        k = 100;
-    }
-
-    /*Coordinaten toewijzen*/
-    switch(eindpunt)
-    {
-    case 1 :
-        eindc[0] = 12;
-        eindc[1] = 4;
-        break;
-    case 2 :
-        eindc[0] = 12;
-        eindc[1] = 6;
-        break;
-    case 3 :
-        eindc[0] = 12;
-        eindc[1] = 8;
-        break;
-    case 4 :
-        eindc[0] = 8;
-        eindc[1] = 12;
-        break;
-    case 5 :
-        eindc[0] = 6;
-        eindc[1] = 12;
-        break;
-    case 6 :
-        eindc[0] = 4;
-        eindc[1] = 12;
-        break;
-    case 7 :
-        eindc[0] = 0;
-        eindc[1] = 8;
-        break;
-    case 8 :
-        eindc[0] = 0;
-        eindc[1] = 6;
-        break;
-    case 9 :
-        eindc[0] = 0;
-        eindc[1] = 4;
-        break;
-    case 10 :
-        eindc[0] = 4;
-        eindc[1] = 0;
-        break;
-    case 11 :
-        eindc[0] = 6;
-        eindc[1] = 0;
-        break;
-    case 12 :
-        eindc[0] = 8;
-        eindc[1] = 0;
-        break;
-    default :
-        /*Foutmelding door onbekend eindpunt*/
-        printf("\nFATALE FOUT!\n");
-        printf("\tOnbekend eindpunt\n");
-        /*Voorkom dat de handel vastloopt*/
-        k = 100;
-    }
     /*De bestemming krijgt waarde i, ofwel 1*/
-    plattegrond[eindc[0]][eindc[1]] = k;
+    plattegrond[eindc[0]][eindc[1]] = 1;
 
     /*Zolang de startpositie nog niet bereikt is*/
-    while((plattegrond[startc[0]][startc[1]] == 0) && (k < 90))
-    {
-        /*Zoek naar waarde k*/
-        for (i=0; i<13; i++)
-        {
-            for (j=0; j<13; j++)
-            {
+    for (k = 1; (plattegrond[startc[0]][startc[1]] == 0) && (k < 90); k++) {
+        for (i=0; i<13; i++) {
+            for (j=0; j<13; j++) {
                 if(plattegrond[i][j] == k)
                 {
-                    /*Buren zoeken*/
-                    /*Buur 1*/
-                    if (i <12)
-                    {
-                        if (plattegrond[i+1][j] == 0)
-                        {
+                    if (i < 12 && plattegrond[i+1][j] == 0)
                             plattegrond[i+1][j] = k + 1;
-                        }
-                    }
-                    /*Buur 2*/
-                    if (i > 0)
-                    {
-                        if (plattegrond[i-1][j] == 0)
-                        {
+
+                    if (i > 0 && plattegrond[i-1][j] == 0)
                             plattegrond[i-1][j] = k + 1;
-                        }
-                    }
-                    /*Buur 3*/
-                    if (j<12)
-                    {
-                        if (plattegrond[i][j+1] == 0)
-                        {
+
+                    if (j < 12 && plattegrond[i][j+1] == 0)
                             plattegrond[i][j+1] = k + 1;
-                        }
-                    }
-                    /*Buur 4*/
-                    if (j > 0)
-                    {
-                        if (plattegrond[i][j-1] == 0)
-                        {
+
+                    if (j > 0 && plattegrond[i][j-1] == 0)
                             plattegrond[i][j-1] = k + 1;
-                        }
-                    }
                 }
             }
         }
-
-        k = k + 1;
     }
+}
+
+int routeLength (int startc[]) {
+
+    int k, rechten = 0, bochten = 0, punt[2];
+
+    k = plattegrond[startc[0]][startc[1]];
 
     if (k < 90)
     {
@@ -309,85 +148,99 @@ int loop(int startpunt, int eindpunt)
         punt[1] = startc[1];
         while(k > 3)
         {
-            /*Voorkeursburen*/
-            /*Voorkeursbuur 1*/
             if ((punt[0] < 11) && (plattegrond[punt[0]+2][punt[1]] == k-2) && (plattegrond[punt[0]+1][punt[1]] == k-1) && (vorigerichting == 1))
             {
                 rechten++;
                 k = k - 2;
-                /*Punt doorschuiven*/
                 punt[0] = punt[0] + 2;
             }
-            /*Voorkeursbuur 2*/
             else if ((punt[0] > 1) && (plattegrond[punt[0]-2][punt[1]] == k-2) && (plattegrond[punt[0]-1][punt[1]] == k-1) && (vorigerichting == 2))
             {
                 rechten++;
                 k = k - 2;
-                /*Punt doorschuiven*/
                 punt[0] = punt[0] - 2;
             }
-            /*Voorkeursbuur 3*/
             else if ((punt[1] < 11) && (plattegrond[punt[0]][punt[1]+2] == k-2) && (plattegrond[punt[0]][punt[1]+1] == k-1) && (vorigerichting == 3))
             {
                 rechten++;
                 k = k - 2;
-                /*Punt doorschuiven*/
                 punt[1] = punt[1] + 2;
             }
-            /*Voorkeursbuur 4*/
             else if ((punt[1] > 1) && (plattegrond[punt[0]][punt[1]-2] == k-2) && (plattegrond[punt[0]][punt[1]-1] == k-1) && (vorigerichting == 4))
             {
                 rechten++;
                 k = k - 2;
-                /*Punt doorschuiven*/
                 punt[1] = punt[1] - 2;
             }
-
-            /*Standaardlijstje buren*/
-            /*Buur 1*/
             else if ((punt[0] < 11) && (plattegrond[punt[0]+2][punt[1]] == k-2) && (plattegrond[punt[0]+1][punt[1]] == k-1))
             {
                 bochten++;
                 rechten++;
                 k = k - 2;
                 vorigerichting = 1;
-                /*Punt doorschuiven*/
                 punt[0] = punt[0] + 2;
             }
-            /*Buur 2*/
             else if ((punt[0] > 1) && (plattegrond[punt[0]-2][punt[1]] == k-2) && (plattegrond[punt[0]-1][punt[1]] == k-1))
             {
                 bochten++;
                 rechten++;
                 k = k - 2;
                 vorigerichting = 2;
-                /*Punt doorschuiven*/
                 punt[0] = punt[0] - 2;
             }
-            /*Buur 3*/
             else if ((punt[1] < 11) && (plattegrond[punt[0]][punt[1]+2] == k-2) && (plattegrond[punt[0]][punt[1]+1] == k-1))
             {
                 bochten++;
                 rechten++;
                 k = k - 2;
                 vorigerichting = 3;
-                /*Punt doorschuiven*/
                 punt[1] = punt[1] + 2;
             }
-            /*Buur 4*/
             else if ((punt[1] > 1) && (plattegrond[punt[0]][punt[1]-2] == k-2) && (plattegrond[punt[0]][punt[1]-1] == k-1))
             {
                 bochten++;
                 rechten++;
                 k = k - 2;
                 vorigerichting = 4;
-                /*Punt doorschuiven*/
                 punt[1] = punt[1] - 2;
             }
         }
     }
-    /*Lengte terugsturen*/
     return (BOCHTWEGING*bochten + WEGENWEGING*rechten);
+
+}
+
+
+void checkPoints (int startpunt, int eindpunt) {
+
+    if (xPos(startpunt) == 99 || xPos(eindpunt) == 99) {
+        printf("\tOnbekend start- of eindpunt\n");
+        exit(0);
+    }
+}
+
+
+int startFromStation(int startpunt, int eindpunt)
+{
+    int startc[2]; /*Array met startpuntcoordinaten*/
+    int eindc[2]; /*Array met eindpuntcoordinaten*/
+    int vorigerichting = 0, lengte; /*Om zo min mogelijk bochten te maken in de route*/
+    
+
+    checkPoints(startpunt, eindpunt);
+
+    startc[0] = yPos(startpunt);
+    startc[1] = xPos(startpunt);
+    vorigerichting = richtingStationBegin(startpunt);
+
+    eindc[0] = yPos(eindpunt);
+    eindc[1] = xPos(eindpunt);
+
+
+    vulPlattegrond(startc, eindc);
+
+    /*Lengte terugsturen*/
+    return routeLength(startc);;
 }
 
 
@@ -410,6 +263,22 @@ void route(int startpunt, int eindpunt)
     int antwoord = 0; /*Reactie van de robot*/
 
 
+    checkPoints(startpunt, eindpunt);
+
+
+    startc[0] = yPos(startpunt);
+    startc[1] = xPos(startpunt);
+
+    if (!stationsbereikt)
+        vorigerichting = richtingStationBegin(startpunt);
+
+    eindc[0] = yPos(eindpunt);
+    eindc[1] = xPos(eindpunt);
+    eindrichting = richtingStationHalverwege (startpunt);
+
+
+
+
     /*In de array alle nummertjes groter dan 0 veranderen in een 0*/
     for (i=0; i<13; i++)
     {
@@ -421,193 +290,6 @@ void route(int startpunt, int eindpunt)
             }
         }
     }
-
-
-    /****************
-    /   Stations    *
-    ****************/
-    /*Coordinaten toewijzen*/
-    switch(startpunt)
-    {
-    case 1 :
-        startc[0] = 12;
-        startc[1] = 4;
-        if (stationsbereikt == 0)
-        {
-            vorigerichting = 2;
-        }
-        break;
-    case 2 :
-        startc[0] = 12;
-        startc[1] = 6;
-        if (stationsbereikt == 0)
-        {
-            vorigerichting = 2;
-        }
-        break;
-    case 3 :
-        startc[0] = 12;
-        startc[1] = 8;
-        if (stationsbereikt == 0)
-        {
-            vorigerichting = 2;
-        }
-        break;
-    case 4 :
-        startc[0] = 8;
-        startc[1] = 12;
-        if (stationsbereikt == 0)
-        {
-            vorigerichting = 4;
-        }
-        break;
-    case 5 :
-        startc[0] = 6;
-        startc[1] = 12;
-        if (stationsbereikt == 0)
-        {
-            vorigerichting = 4;
-        }
-        break;
-    case 6 :
-        startc[0] = 4;
-        startc[1] = 12;
-        if (stationsbereikt == 0)
-        {
-            vorigerichting = 4;
-        }
-        break;
-    case 7 :
-        startc[0] = 0;
-        startc[1] = 8;
-        if (stationsbereikt == 0)
-        {
-            vorigerichting = 1;
-        }
-        break;
-    case 8 :
-        startc[0] = 0;
-        startc[1] = 6;
-        if (stationsbereikt == 0)
-        {
-            vorigerichting = 1;
-        }
-        break;
-    case 9 :
-        startc[0] = 0;
-        startc[1] = 4;
-        if (stationsbereikt == 0)
-        {
-            vorigerichting = 1;
-        }
-        break;
-    case 10 :
-        startc[0] = 4;
-        startc[1] = 0;
-        if (stationsbereikt == 0)
-        {
-            vorigerichting = 3;
-        }
-        break;
-    case 11 :
-        startc[0] = 6;
-        startc[1] = 0;
-        if (stationsbereikt == 0)
-        {
-            vorigerichting = 3;
-        }
-        break;
-    case 12 :
-        startc[0] = 8;
-        startc[1] = 0;
-        if (stationsbereikt == 0)
-        {
-            vorigerichting = 3;
-        }
-        break;
-    default :
-        /*Foutmelding door onbekend startpunt*/
-        printf("\nFATALE FOUT!\n");
-        printf("\tOnbekend startpunt\n");
-        /*Voorkom dat de handel vastloopt*/
-        k = 100;
-    }
-
-
-    /*Coordinaten toewijzen*/
-    switch(eindpunt)
-    {
-    case 1 :
-        eindc[0] = 12;
-        eindc[1] = 4;
-        eindrichting = 1;
-        break;
-    case 2 :
-        eindc[0] = 12;
-        eindc[1] = 6;
-        eindrichting = 1;
-        break;
-    case 3 :
-        eindc[0] = 12;
-        eindc[1] = 8;
-        eindrichting = 1;
-        break;
-    case 4 :
-        eindc[0] = 8;
-        eindc[1] = 12;
-        eindrichting = 3;
-        break;
-    case 5 :
-        eindc[0] = 6;
-        eindc[1] = 12;
-        eindrichting = 3;
-        break;
-    case 6 :
-        eindc[0] = 4;
-        eindc[1] = 12;
-        eindrichting = 3;
-        break;
-    case 7 :
-        eindc[0] = 0;
-        eindc[1] = 8;
-        eindrichting = 2;
-        break;
-    case 8 :
-        eindc[0] = 0;
-        eindc[1] = 6;
-        eindrichting = 2;
-        break;
-    case 9 :
-        eindc[0] = 0;
-        eindc[1] = 4;
-        eindrichting = 2;
-        break;
-    case 10 :
-        eindc[0] = 4;
-        eindc[1] = 0;
-        eindrichting = 4;
-        break;
-    case 11 :
-        eindc[0] = 6;
-        eindc[1] = 0;
-        eindrichting = 4;
-        break;
-    case 12 :
-        eindc[0] = 8;
-        eindc[1] = 0;
-        eindrichting = 4;
-        break;
-    default :
-        /*Foutmelding door onbekend eindpunt*/
-        printf("\nFATALE FOUT!\n");
-        printf("\tOnbekend eindpunt\n");
-        /*Voorkom dat de handel vastloopt*/
-        k = 100;
-    }
-
-
-
-
 
 
     /*******************
@@ -1221,45 +903,44 @@ int main()
     int volgorde = 0; /*Volgorde stations bezoeken*/
     int i;
 
-    leegPlattegrond();
 
-    printf("MAZE ROUTER V6\n\nVoer een station in waarbij de robot start, gevolgd door drie stations die\nbezocht moeten worden. Scheid alle stations met een spatie of enter tijdens\nhet invoerproces.\n\n");
+    /*  Read input,
+        calculate routes in array, 
+        send array - while listening */
+
+    printf("Voer een station in waarbij de robot start, gevolgd door drie stations die\nbezocht moeten worden. Scheid alle stations met een spatie of enter tijdens\nhet invoerproces.\n\n");
+    
     for(i = 0; i < 4; i++) /*Input opvragen*/
-    {
         scanf("%d", &input[i]);
-    }
+
     /*Alle routes tussen de stations berekenen en opslaan in de array perm*/
-    perm[0] = loop(input[0],input[1]);
-    perm[1] = loop(input[0],input[2]);
-    perm[2] = loop(input[0],input[3]);
-    perm[3] = loop(input[1],input[2]);
-    perm[4] = loop(input[1],input[3]);
-    perm[5] = loop(input[2],input[3]);
+    perm[0] = startFromStation(input[0],input[1]);
+    perm[1] = startFromStation(input[0],input[2]);
+    perm[2] = startFromStation(input[0],input[3]);
+    perm[3] = startFromStation(input[1],input[2]);
+    perm[4] = startFromStation(input[1],input[3]);
+    perm[5] = startFromStation(input[2],input[3]);
 
     /*De korste route bepalen*/
     kortste = perm[0] + perm[3] + perm[5];
-    if(perm[0] + perm[4] + perm[5] < kortste)
-    {
+
+    if(perm[0] + perm[4] + perm[5] < kortste) {
         kortste = perm[0] + perm[4] + perm[5];
         volgorde = 1;
     }
-    if(perm[1] + perm[3] + perm[4] < kortste)
-    {
+    if(perm[1] + perm[3] + perm[4] < kortste) {
         kortste = perm[1] + perm[3] + perm[4];
         volgorde = 2;
     }
-    if(perm[1] + perm[5] + perm[4] < kortste)
-    {
+    if(perm[1] + perm[5] + perm[4] < kortste) {
         kortste = perm[1] + perm[5] + perm[4];
         volgorde = 3;
     }
-    if(perm[2] + perm[4] + perm[3] < kortste)
-    {
+    if(perm[2] + perm[4] + perm[3] < kortste) {
         kortste = perm[2] + perm[4] + perm[3];
         volgorde = 4;
     }
-    if(perm[2] + perm[5] + perm[3] < kortste)
-    {
+    if(perm[2] + perm[5] + perm[3] < kortste) {
         kortste = perm[2] + perm[5] + perm[3];
         volgorde = 5;
     }
@@ -1307,7 +988,7 @@ int main()
     }
 
     printf("\n\n\tAlle %d stations bezocht\n\n", stationsbereikt);
-    printf("\nBlij dat je dankzij mij veilig bent overgekomen?\nDonaties zijn altijd welkom op mijn rekening!\nTim Al\n");
     return 0;
 
 }
+
