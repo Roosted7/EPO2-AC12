@@ -1,5 +1,5 @@
-/*MAZE ROUTER V5COM2
-  Hetzelfde als de Maze Router v4, maar nu is het mogelijk om DRIE bestemmingen in te voeren en de robot zal ze allemaal afgaan in een zo kort mogelijke tijd
+/*MAZE ROUTER V6COM1
+  Hetzelfde als de Maze Router v5, maar nu zal de robot ook achteruit gaan rijden als dat beter uitkomt
   Deze versie verstuurt en ontvangt ook de signalen via de COM-poort, maar het ontvangen is nog niet getest omdat de bijbehorende VHDL-beschrijving ontbreekt.
 */
 
@@ -12,12 +12,14 @@
 #define COMPORT "COM3"
 #define BAUDRATE CBR_9600
 
-
 /*Specificeer hieronder de verhouding in tijd die het kost om rechtdoor te rijden tegen het nemen van een bocht*/
 #define BOCHTWEGING 2
 #define WEGENWEGING 1
 
-
+/*Globale variabelen*/
+int stationsbereikt = 0;
+int achteruit = 0;
+int vorigerichting = 0; /*Om zo min mogelijk bochten te maken in de route*/
 int plattegrond[13][13] =
 {
     { -1, -1, -1, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1},
@@ -35,14 +37,16 @@ int plattegrond[13][13] =
     { -1, -1, -1, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1}
 };
 
-void initSio(HANDLE hSerial){
+void initSio(HANDLE hSerial)
+{
 
-    COMMTIMEOUTS timeouts ={0};
+    COMMTIMEOUTS timeouts = {0};
     DCB dcbSerialParams = {0};
 
     dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
 
-    if (!GetCommState(hSerial, &dcbSerialParams)) {
+    if (!GetCommState(hSerial, &dcbSerialParams))
+    {
         printf("error getting state \n");
     }
 
@@ -51,7 +55,8 @@ void initSio(HANDLE hSerial){
     dcbSerialParams.StopBits = ONESTOPBIT;
     dcbSerialParams.Parity   = NOPARITY;
 
-    if(!SetCommState(hSerial, &dcbSerialParams)){
+    if(!SetCommState(hSerial, &dcbSerialParams))
+    {
         printf("error setting state \n");
     }
 
@@ -62,12 +67,14 @@ void initSio(HANDLE hSerial){
     timeouts.WriteTotalTimeoutConstant = 50;
     timeouts.WriteTotalTimeoutMultiplier = 10;
 
-    if(!SetCommTimeouts(hSerial, &timeouts)){
+    if(!SetCommTimeouts(hSerial, &timeouts))
+    {
         printf("error setting timeout state \n");
     }
 }
 
-int readByte(HANDLE hSerial, char *buffRead) {
+int readByte(HANDLE hSerial, char *buffRead)
+{
 
     DWORD dwBytesRead = 0;
 
@@ -75,7 +82,7 @@ int readByte(HANDLE hSerial, char *buffRead) {
     {
         printf("error reading byte from input buffer \n");
     }
-    printf("Byte read from read buffer is: %c \n", buffRead[0]);
+    /*printf("Byte read from read buffer is: %c \n", buffRead[0]);*/
     /*Antwoord interpreteren*/
     if (buffRead[0] == '1')
     {
@@ -89,7 +96,8 @@ int readByte(HANDLE hSerial, char *buffRead) {
     return(2);
 }
 
-int writeByte(HANDLE hSerial, char *buffWrite){
+int writeByte(HANDLE hSerial, char *buffWrite)
+{
 
     DWORD dwBytesWritten = 0;
 
@@ -97,7 +105,7 @@ int writeByte(HANDLE hSerial, char *buffWrite){
     {
         printf("error writing byte to output buffer \n");
     }
-    printf("Byte written to write buffer is: %c \n", buffWrite[0]);
+    /*printf("Byte written to write buffer is: %c \n", buffWrite[0]);*/
 
     return(0);
 }
@@ -256,7 +264,7 @@ int loop(int startpunt, int eindpunt)
         /*Voorkom dat de handel vastloopt*/
         k = 100;
     }
-    /*De bestemming krijgt waarde i, ofwel 1*/
+    /*De bestemming krijgt waarde k, ofwel 1*/
     plattegrond[eindc[0]][eindc[1]] = k;
 
     /*Zolang de startpositie nog niet bereikt is*/
@@ -398,13 +406,15 @@ int loop(int startpunt, int eindpunt)
 }
 
 
+
+
 void route(int startpunt, int eindpunt)
 {
-    /****************
-    /   OPSTARTEN   *
-    ****************/
+    /**************************
+    /   OPSTARTEN EINDROUTE   *
+    **************************/
 
-    HANDLE hSerial;
+    HANDLE hSerial; /*Communicatie starten*/
 
     int klaar = 0, opnieuw = 0; /*Om meerdere wegen te proberen tot het eindpunt is bereikt*/
     int i = 0, j = 0, k = 0; /*Willekeurige integers om te doorlopen in een lus*/
@@ -413,33 +423,24 @@ void route(int startpunt, int eindpunt)
     int eindc[2]; /*Array met eindpuntcoordinaten*/
     int punt[2]; /*Array met de coordinaten van het pad om terug te komen*/
     int skip = 0; /*Om de controle op buren over te slaan*/
-    int vorigerichting = 0; /*Om zo min mogelijk bochten te maken in de route*/
     int eindrichting = 0; /*Voor de laatste richting naar het eindstation*/
     int antwoord = 0; /*Reactie van de robot*/
 
-    char vooruitchar=-127;
+    char vooruitchar=-127; /*Omdat de instructie voor rechtdoor geen teken heeft*/
     char byteBuffer[BUFSIZ+1];
 
-    hSerial = CreateFile(COMPORT,
-        GENERIC_READ | GENERIC_WRITE,
-        0,
-        0,
-        OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL,
-        0
-    );
+    hSerial = CreateFile(COMPORT, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 
-    if(hSerial == INVALID_HANDLE_VALUE){
-        if(GetLastError()== ERROR_FILE_NOT_FOUND){
+    if(hSerial == INVALID_HANDLE_VALUE)
+    {
+        if(GetLastError()== ERROR_FILE_NOT_FOUND)
+        {
             printf(" serial port does not exist \n");
         }
         printf(" some other error occured. Inform user.\n");
     }
 
     initSio(hSerial);
-
-
-
 
     /*In de array alle nummertjes groter dan 0 veranderen in een 0*/
     for (i=0; i<13; i++)
@@ -463,62 +464,98 @@ void route(int startpunt, int eindpunt)
     case 1 :
         startc[0] = 12;
         startc[1] = 4;
-        vorigerichting = 2;
+        if (stationsbereikt == 0)
+        {
+            vorigerichting = 2;
+        }
         break;
     case 2 :
         startc[0] = 12;
         startc[1] = 6;
-        vorigerichting = 2;
+        if (stationsbereikt == 0)
+        {
+            vorigerichting = 2;
+        }
         break;
     case 3 :
         startc[0] = 12;
         startc[1] = 8;
-        vorigerichting = 2;
+        if (stationsbereikt == 0)
+        {
+            vorigerichting = 2;
+        }
         break;
     case 4 :
         startc[0] = 8;
         startc[1] = 12;
-        vorigerichting = 4;
+        if (stationsbereikt == 0)
+        {
+            vorigerichting = 4;
+        }
         break;
     case 5 :
         startc[0] = 6;
         startc[1] = 12;
-        vorigerichting = 4;
+        if (stationsbereikt == 0)
+        {
+            vorigerichting = 4;
+        }
         break;
     case 6 :
         startc[0] = 4;
         startc[1] = 12;
-        vorigerichting = 4;
+        if (stationsbereikt == 0)
+        {
+            vorigerichting = 4;
+        }
         break;
     case 7 :
         startc[0] = 0;
         startc[1] = 8;
-        vorigerichting = 1;
+        if (stationsbereikt == 0)
+        {
+            vorigerichting = 1;
+        }
         break;
     case 8 :
         startc[0] = 0;
         startc[1] = 6;
-        vorigerichting = 1;
+        if (stationsbereikt == 0)
+        {
+            vorigerichting = 1;
+        }
         break;
     case 9 :
         startc[0] = 0;
         startc[1] = 4;
-        vorigerichting = 1;
+        if (stationsbereikt == 0)
+        {
+            vorigerichting = 1;
+        }
         break;
     case 10 :
         startc[0] = 4;
         startc[1] = 0;
-        vorigerichting = 3;
+        if (stationsbereikt == 0)
+        {
+            vorigerichting = 3;
+        }
         break;
     case 11 :
         startc[0] = 6;
         startc[1] = 0;
-        vorigerichting = 3;
+        if (stationsbereikt == 0)
+        {
+            vorigerichting = 3;
+        }
         break;
     case 12 :
         startc[0] = 8;
         startc[1] = 0;
-        vorigerichting = 3;
+        if (stationsbereikt == 0)
+        {
+            vorigerichting = 3;
+        }
         break;
     default :
         /*Foutmelding door onbekend startpunt*/
@@ -614,8 +651,15 @@ void route(int startpunt, int eindpunt)
     punt[1] = startc[1];
 
     /*Startpunt afdrukken*/
-    printf("Start vanaf station %d, richting het speelveld (%d)\n", startpunt, vorigerichting);
-
+    if (stationsbereikt == 0)
+    {
+        printf("\nStart vanaf station %d, richting het speelveld (%d)\n", startpunt, vorigerichting);
+        achteruit = 0;
+    }
+    else
+    {
+        printf("\nStart vanaf station %d in richting (%d)\n", startpunt, vorigerichting);
+    }
 
 
 
@@ -785,6 +829,88 @@ void route(int startpunt, int eindpunt)
 
 
 
+                /*Achterstevoorkeursburen*/
+                /*Achterstevoorkeursbuur 1*/
+                if ((skip == 0) && (punt[0] < 11) && (plattegrond[punt[0]+2][punt[1]] == k-2) && (plattegrond[punt[0]+1][punt[1]] == k-1) && (vorigerichting == 2))
+                {
+                    /*Reken dat plekje om naar de skrale notatie*/
+                    x1 = punt[1];
+                    y1 = punt[0]+2;
+                    x2 = (x1)/2 - 1;
+                    y2 = 5 - (y1)/2;
+
+                    /*Print dit plekje*/
+                    printf("\nDraai niet, achteruit (1) naar c%d%d\n\n", x2, y2);
+                    writeByte(hSerial, "ˆ");
+                    k = k - 2;
+                    achteruit = 1;
+                    skip = 1;
+
+                    /*Punt doorschuiven*/
+                    punt[0] = punt[0] + 2;
+                }
+                /*Achterstevoorkeursbuur 2*/
+                if ((skip == 0) && (punt[0] > 1) && (plattegrond[punt[0]-2][punt[1]] == k-2) && (plattegrond[punt[0]-1][punt[1]] == k-1) && (vorigerichting == 1))
+                {
+                    /*Reken dat plekje om naar de skrale notatie*/
+                    x1 = punt[1];
+                    y1 = punt[0]-2;
+                    x2 = (x1)/2 - 1;
+                    y2 = 5 - (y1)/2;
+
+                    /*Print dit plekje*/
+                    printf("\nDraai niet, achteruit (2) naar c%d%d\n\n", x2, y2);
+                    writeByte(hSerial, "ˆ");
+                    k = k - 2;
+                    achteruit = 1;
+                    skip = 1;
+
+                    /*Punt doorschuiven*/
+                    punt[0] = punt[0] - 2;
+                }
+                /*Achterstevoorkeursbuur 3*/
+                if ((skip == 0) && (punt[1] < 11) && (plattegrond[punt[0]][punt[1]+2] == k-2) && (plattegrond[punt[0]][punt[1]+1] == k-1) && (vorigerichting == 4))
+                {
+                    /*Reken dat plekje om naar de skrale notatie*/
+                    x1 = punt[1]+2;
+                    y1 = punt[0];
+                    x2 = (x1)/2 - 1;
+                    y2 = 5 - (y1)/2;
+
+                    /*Print dit plekje*/
+                    printf("\nDraai niet, achteruit (3) naar c%d%d\n\n", x2, y2);
+                    writeByte(hSerial, "ˆ");
+                    k = k - 2;
+                    achteruit = 1;
+                    skip = 1;
+
+                    /*Punt doorschuiven*/
+                    punt[1] = punt[1] + 2;
+                }
+                /*Achterstevoorkeursbuur 4*/
+                if ((skip == 0) && (punt[1] > 1) && (plattegrond[punt[0]][punt[1]-2] == k-2) && (plattegrond[punt[0]][punt[1]-1] == k-1) && (vorigerichting == 3))
+                {
+                    /*Reken dat plekje om naar de skrale notatie*/
+                    x1 = punt[1]-2;
+                    y1 = punt[0];
+                    x2 = (x1)/2 - 1;
+                    y2 = 5 - (y1)/2;
+
+                    /*Print dit plekje*/
+                    printf("\nDraai niet, achteruit (4) naar c%d%d\n\n", x2, y2);
+                    writeByte(hSerial, "ˆ");
+                    k = k - 2;
+                    achteruit = 1;
+                    skip = 1;
+
+                    /*Punt doorschuiven*/
+                    punt[1] = punt[1] - 2;
+                }
+
+
+
+
+
 
                 /*Standaardlijstje buren*/
                 /*Buur 1*/
@@ -811,6 +937,7 @@ void route(int startpunt, int eindpunt)
                     }
                     k = k - 2;
                     vorigerichting = 1;
+                    achteruit = 0;
                     skip = 1;
 
                     /*Punt doorschuiven*/
@@ -840,6 +967,7 @@ void route(int startpunt, int eindpunt)
                     }
                     k = k - 2;
                     vorigerichting = 2;
+                    achteruit = 0;
                     skip = 1;
 
                     /*Punt doorschuiven*/
@@ -869,6 +997,7 @@ void route(int startpunt, int eindpunt)
                     }
                     k = k - 2;
                     vorigerichting = 3;
+                    achteruit = 0;
                     skip = 1;
 
                     /*Punt doorschuiven*/
@@ -898,6 +1027,7 @@ void route(int startpunt, int eindpunt)
                     }
                     k = k - 2;
                     vorigerichting = 4;
+                    achteruit = 0;
                     skip = 1;
 
                     /*Punt doorschuiven*/
@@ -941,27 +1071,25 @@ void route(int startpunt, int eindpunt)
                     /*Bepaal het punt van de mijn*/
                     x1 = punt[1];
                     y1 = punt[0];
+                    if (achteruit == 0)
+                        {
                     switch(vorigerichting)
                     {
                     case 1 :
                         punt[0] = punt[0] - 2;
                         y1 = y1 - 1;
-                        vorigerichting = 2;
                         break;
                     case 2 :
                         punt[0] = punt[0] + 2;
                         y1 = y1 + 1;
-                        vorigerichting = 1;
                         break;
                     case 3 :
                         punt[1] = punt[1] - 2;
                         x1 = x1 - 1;
-                        vorigerichting = 4;
                         break;
                     case 4 :
                         punt[1] = punt[1] + 2;
                         x1 = x1 + 1;
-                        vorigerichting = 3;
                         break;
                     }
 
@@ -969,9 +1097,44 @@ void route(int startpunt, int eindpunt)
                     printf("!!\tMijn gevonden op [%d;%d] in de array\n", x1, y1);
 
                     /*Omdraaien en geef het kruispunt wat de robot tegenkomt*/
-                    x2 = (punt[1])/2 - 1;
-                    y2 = 5 - (punt[0])/2;
-                    printf("\nDraai volledig om (%d) naar c%d%d\n\n", vorigerichting, x2, y2);
+                        x2 = (punt[1])/2 - 1;
+                        y2 = 5 - (punt[0])/2;
+                        printf("\nRij achteruit (%d) naar c%d%d\n\n", vorigerichting, x2, y2);
+                    }
+
+
+
+                    else
+                    {
+                        switch(vorigerichting)
+                        {
+                        case 2 :
+                            punt[0] = punt[0] - 2;
+                            y1 = y1 - 1;
+                            break;
+                        case 1 :
+                            punt[0] = punt[0] + 2;
+                            y1 = y1 + 1;
+                            break;
+                        case 4 :
+                            punt[1] = punt[1] - 2;
+                            x1 = x1 - 1;
+                            break;
+                        case 3 :
+                            punt[1] = punt[1] + 2;
+                            x1 = x1 + 1;
+                            break;
+                        }
+
+                        /*Vertel waar de mijn ligt*/
+                        printf("!!\tMijn gevonden op [%d;%d] in de array\n", x1, y1);
+
+                        /*Omdraaien en geef het kruispunt wat de robot tegenkomt*/
+                        x2 = (punt[1])/2 - 1;
+                        y2 = 5 - (punt[0])/2;
+                        printf("\nRij vooruit (%d) naar c%d%d\n\n", vorigerichting, x2, y2);
+                    }
+
 
                     /*Startpunt zetten naar het huidige punt*/
                     startc[0] = punt[0];
@@ -1020,12 +1183,19 @@ void route(int startpunt, int eindpunt)
                         if (vorigerichting == 3)
                         {
                             printf("\nDraai rechtsom naar   (%d) naar het eindpunt, station %d\n\n", eindrichting, eindpunt);
+                            vorigerichting = eindrichting;
                             writeByte(hSerial, "Â");
                         }
                         if (vorigerichting == 4)
                         {
                             printf("\nDraai linksom naar    (%d) naar het eindpunt, station %d\n\n", eindrichting, eindpunt);
+                            vorigerichting = eindrichting;
                             writeByte(hSerial, "Ä");
+                        }
+                        if (vorigerichting == 2)
+                        {
+                            printf("\nRij achteruit naar    (%d) naar het eindpunt, station %d\n\n", vorigerichting, eindpunt);
+                            writeByte(hSerial, "È");
                         }
                     }
 
@@ -1034,12 +1204,19 @@ void route(int startpunt, int eindpunt)
                         if (vorigerichting == 4)
                         {
                             printf("\nDraai rechtsom naar   (%d) naar het eindpunt, station %d\n\n", eindrichting, eindpunt);
+                            vorigerichting = eindrichting;
                             writeByte(hSerial, "Â");
                         }
                         if (vorigerichting == 3)
                         {
                             printf("\nDraai linksom naar    (%d) naar het eindpunt, station %d\n\n", eindrichting, eindpunt);
+                            vorigerichting = eindrichting;
                             writeByte(hSerial, "Ä");
+                        }
+                        if (vorigerichting == 1)
+                        {
+                            printf("\nRij achteruit naar    (%d) naar het eindpunt, station %d\n\n", vorigerichting, eindpunt);
+                            writeByte(hSerial, "È");
                         }
                     }
 
@@ -1048,12 +1225,19 @@ void route(int startpunt, int eindpunt)
                         if (vorigerichting == 2)
                         {
                             printf("\nDraai rechtsom naar   (%d) naar het eindpunt, station %d\n\n", eindrichting, eindpunt);
+                            vorigerichting = eindrichting;
                             writeByte(hSerial, "Â");
                         }
                         if (vorigerichting == 1)
                         {
                             printf("\nDraai linksom naar    (%d) naar het eindpunt, station %d\n\n", eindrichting, eindpunt);
+                            vorigerichting = eindrichting;
                             writeByte(hSerial, "Ä");
+                        }
+                        if (vorigerichting == 4)
+                        {
+                            printf("\nRij achteruit naar    (%d) naar het eindpunt, station %d\n\n", vorigerichting, eindpunt);
+                            writeByte(hSerial, "È");
                         }
                     }
 
@@ -1062,17 +1246,25 @@ void route(int startpunt, int eindpunt)
                         if (vorigerichting == 1)
                         {
                             printf("\nDraai rechtsom naar   (%d) naar het eindpunt, station %d\n\n", eindrichting, eindpunt);
+                            vorigerichting = eindrichting;
                             writeByte(hSerial, "Â");
                         }
                         if (vorigerichting == 2)
                         {
                             printf("\nDraai linksom naar    (%d) naar het eindpunt, station %d\n\n", eindrichting, eindpunt);
+                            vorigerichting = eindrichting;
                             writeByte(hSerial, "Ä");
+                        }
+                        if (vorigerichting == 3)
+                        {
+                            printf("\nRij achteruit naar    (%d) naar het eindpunt, station %d\n\n", vorigerichting, eindpunt);
+                            writeByte(hSerial, "È");
                         }
                     }
                 }
 
                 klaar = 1;
+                stationsbereikt = stationsbereikt + 1;
 
             }
 
@@ -1082,28 +1274,32 @@ void route(int startpunt, int eindpunt)
 
     if (klaar == 1)
     {
-        printf("Bestemming bereikt\n");
-        printf("Typ even een 1 om aan te geven dat je klaar bent om verder te gaan\n");
-        scanf("%d", &antwoord);
-        if (antwoord == 1)
+        while (1)
         {
-            writeByte(hSerial, "€");
-            CloseHandle(hSerial);
+            antwoord=readByte(hSerial, byteBuffer);
+            if (antwoord == 1)
+                break;
         }
+        printf("\n\tBestemming bereikt\n\n");
     }
+    /*Laatste keer*/
+    if (stationsbereikt == 3)
+    {
+        /*Stopcommando*/
+        writeByte(hSerial, "€");
+    }
+    CloseHandle(hSerial);
 }
 
 
 int main()
 {
-    /*Eventjes geen communicatie*/
     int input[4]; /*Opslag input*/
     int perm[6]; /*Opslag weging routes*/
     int kortste = 0; /*Lengte kortste route*/
     int volgorde = 0; /*Volgorde stations bezoeken*/
     int i;
-
-    printf("MAZE ROUTER V5\n\nVoer een station in waarbij de robot start, gevolgd door drie stations die\nbezocht moeten worden. Scheid alle stations met een spatie of enter tijdens\nhet invoerproces.\n\n");
+    printf("MAZE ROUTER V6\n\nVoer een station in waarbij de robot start, gevolgd door drie stations die\nbezocht moeten worden. Scheid alle stations met een spatie of enter tijdens\nhet invoerproces.\n\n");
     for(i = 0; i < 4; i++) /*Input opvragen*/
     {
         scanf("%d", &input[i]);
@@ -1115,10 +1311,6 @@ int main()
     perm[3] = loop(input[1],input[2]);
     perm[4] = loop(input[1],input[3]);
     perm[5] = loop(input[2],input[3]);
-
-    /*Dit is voor debug doeleinden*/
-    for(i = 0; i < 6; i++)
-        printf("perm[%d] = %d\n", i, perm[i]);
 
     /*De korste route bepalen*/
     kortste = perm[0] + perm[3] + perm[5];
@@ -1155,58 +1347,43 @@ int main()
     case 0 :
         /*Volgorde 0 1 2 3*/
         route(input[0], input[1]);
-        printf("\nDraai volledig om richting het speelveld en\n");
         route(input[1], input[2]);
-        printf("\nDraai volledig om richting het speelveld\n");
         route(input[2], input[3]);
-        printf("\nAlle stations bezocht\n");
         break;
     case 1 :
         /*Volgorde 0 1 3 2*/
         route(input[0], input[1]);
-        printf("\nDraai volledig om richting het speelveld en\n");
         route(input[1], input[3]);
-        printf("\nDraai volledig om richting het speelveld\n");
         route(input[3], input[2]);
-        printf("\nAlle stations bezocht\n");
         break;
     case 2 :
         /*Volgorde 0 2 1 3*/
         route(input[0], input[2]);
-        printf("\nDraai volledig om richting het speelveld en\n");
         route(input[2], input[1]);
-        printf("\nDraai volledig om richting het speelveld\n");
         route(input[1], input[3]);
-        printf("\nAlle stations bezocht\n");
         break;
     case 3 :
         /*Volgorde 0 2 3 1*/
         route(input[0], input[2]);
-        printf("\nDraai volledig om richting het speelveld en\n");
         route(input[2], input[3]);
-        printf("\nDraai volledig om richting het speelveld\n");
         route(input[3], input[1]);
-        printf("\nAlle stations bezocht\n");
         break;
     case 4 :
         /*Volgorde 0 3 1 2*/
         route(input[0], input[3]);
-        printf("\nDraai volledig om richting het speelveld en\n");
         route(input[3], input[1]);
-        printf("\nDraai volledig om richting het speelveld\n");
         route(input[1], input[2]);
-        printf("\nAlle stations bezocht\n");
         break;
     case 5 :
         /*Volgorde 0 3 2 1*/
         route(input[0], input[3]);
-        printf("\nDraai volledig om richting het speelveld en\n");
         route(input[3], input[2]);
-        printf("\nDraai volledig om richting het speelveld\n");
         route(input[2], input[1]);
-        printf("\nAlle stations bezocht\n");
         break;
     }
+
+    printf("\n\n\tAlle %d stations bezocht\n\n", stationsbereikt);
+    printf("\nBlij dat je dankzij mij veilig bent overgekomen?\nDonaties zijn altijd welkom op mijn rekening!\nTim Al\n");
     return 0;
 
 }
