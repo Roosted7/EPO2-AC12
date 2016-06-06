@@ -135,6 +135,9 @@ void vulPlattegrond(int startc[], int eindc[]) {
     }
 }
 
+
+
+
 int routeLength (int startc[]) {
 
     int k, rechten = 0, bochten = 0, punt[2];
