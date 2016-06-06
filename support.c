@@ -3,6 +3,7 @@
 
 
 extern int plattegrond[13][13];
+extern int input[4][3];
 
 void printMaze () {
 
@@ -193,7 +194,7 @@ int routeLength (int startc[], int eindc[]) {
 
 
 
-int bepaalVolgorde (int input[4][3]) {
+int bepaalVolgorde () {
 
     int i, kortste, perm[6], volgorde = 0; 
 
