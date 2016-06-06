@@ -48,6 +48,7 @@ int yPos (int punt) {
     return 99;
 }
 
+
 int richtingStationBegin (int punt) {
 
     if (punt == 1 || punt == 2 || punt == 3)
@@ -66,13 +67,14 @@ int richtingStationHalverwege (int punt) {
     if (punt == 1 || punt == 2 || punt == 3)
         return 1;
     if (punt == 4 || punt == 5 || punt == 6)
-        return 4;
+        return 3;
     if (punt == 7 || punt == 8 || punt == 9)
         return 2;
     if (punt == 10 || punt == 11 || punt == 12)
         return 4;
     return 99;
 }
+
 
 void nulPlattegrond () {
     int i, j;
@@ -82,9 +84,7 @@ void nulPlattegrond () {
         for (j=0; j<13; j++)
         {
             if (plattegrond[i][j] > 0)
-            {
                 plattegrond[i][j] = 0;
-            }
         }
     }
 }
@@ -125,7 +125,7 @@ int routeLength (int startc[], int eindc[]) {
 
     int k, rechten = 0, bochten = 0, punt[2], vorigerichting;
 
-    vorigerichting = startc[0][2];
+    vorigerichting = startc[2];
 
     vulPlattegrond(startc, eindc);
 
@@ -189,6 +189,8 @@ int routeLength (int startc[], int eindc[]) {
     return (BOCHTWEGING*bochten + WEGENWEGING*rechten);
 
 }
+
+
 
 
 int bepaalVolgorde (int input[4][3]) {

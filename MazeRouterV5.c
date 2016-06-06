@@ -27,23 +27,6 @@ int plattegrond[13][13] =
 };
 
 
-int distance(int startpunt, int eindpunt)   {
-
-    int startc[2]; /*Array met startpuntcoordinaten*/
-    int eindc[2]; /*Array met eindpuntcoordinaten*/
-    int vorigerichting = 0; /*Om zo min mogelijk bochten te maken in de route*/
-
-    startc[0] = yPos(startpunt);
-    startc[1] = xPos(startpunt);
-    vorigerichting = richtingStationBegin(startpunt);
-
-    eindc[0] = yPos(eindpunt);
-    eindc[1] = xPos(eindpunt);
-
-    return routeLength(startc, eindc, vorigerichting);
-}
-
-
 void route(int startpunt, int eindpunt) {
     /****************
     /   OPSTARTEN   *
@@ -364,7 +347,7 @@ int readInput () {
 
         scanf("%d", &rawInput[i]);
 
-        if (rawInput[i] > -1 && rawInput[1] < 13) {
+        if (rawInput[i] > -1 && rawInput[i] < 13) {
             input[i][0] = yPos(rawInput[i]);
             input[i][1] = xPos(rawInput[i]);
             input[i][2] = richtingStationHalverwege(rawInput[i]);
@@ -376,16 +359,14 @@ int readInput () {
         }
     }
 
-    return   
+    return input[4][3];
 }
 
 int main()
 {
-    int rawInput[4], input[4][3] i, volgorde; /*Opslag input*/
+    int volgorde; /*Opslag input*/
 
-    printf("MAZE ROUTER V5\n\nVoer een station in waarbij de robot start, gevolgd door drie stations die \n
-        bezocht moeten worden. Scheid alle stations met een spatie of enter tijdens \n
-        het invoerproces.\n\n");
+    printf("MAZE ROUTER V5\n\nVoer een station in waarbij de robot start, gevolgd door drie stations die \nbezocht moeten worden. Scheid alle stations met een spatie of enter tijdens \nhet invoerproces.\n\n");
 
     volgorde = bepaalVolgorde(readInput());
 
