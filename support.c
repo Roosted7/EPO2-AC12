@@ -1,5 +1,5 @@
-#define BOCHTWEGING 2
-#define WEGENWEGING 1
+#define BOCHTWEGING 1
+#define WEGENWEGING 6
 
 
 extern int plattegrond[13][13];
@@ -136,7 +136,7 @@ int routeLength (int startc[], int eindc[]) {
     /*Spring naar het eindpunt met de punt*/
     punt[0] = startc[0];
     punt[1] = startc[1];
-    while(k > 3)
+    while(k > 2)
     {
         if ((punt[0] < 11) && (plattegrond[punt[0]+2][punt[1]] == k-2) && (plattegrond[punt[0]+1][punt[1]] == k-1) && (vorigerichting == 1)) {
             rechten++;
@@ -187,53 +187,66 @@ int routeLength (int startc[], int eindc[]) {
             punt[1] = punt[1] - 2;
         }
     }
+
+
     return (BOCHTWEGING*bochten + WEGENWEGING*rechten);
 
 }
 
+void swapInput (int swap1, int swap2) {
+
+    int i, tempInput[3];
+
+    for (i = 0; i < 3; i++) {
+        tempInput[i] = input[swap1][i];
+        input[swap1][i] = input[swap2][i];
+        input[swap2][i] = tempInput[i];
+    }
+    
+}
 
 
+void sorteerInput () {
 
-int bepaalVolgorde () {
-
-    int i, kortste, perm[6], volgorde = 0; 
+    int kortste, routeSegmentLength[6];
 
     /*Alle routes tussen de stations berekenen en opslaan in de array perm*/
-    perm[0] = routeLength(input[0],input[1]);
-    perm[1] = routeLength(input[0],input[2]);
-    perm[2] = routeLength(input[0],input[3]);
-    perm[3] = routeLength(input[1],input[2]);
-    perm[4] = routeLength(input[1],input[3]);
-    perm[5] = routeLength(input[2],input[3]);
+    routeSegmentLength[0] = routeLength(input[0],input[1]);
+    routeSegmentLength[1] = routeLength(input[0],input[2]);
+    routeSegmentLength[2] = routeLength(input[0],input[3]);
+    routeSegmentLength[3] = routeLength(input[1],input[2]);
+    routeSegmentLength[4] = routeLength(input[1],input[3]);
+    routeSegmentLength[5] = routeLength(input[2],input[3]);
 
-    /*De korste route bepalen*/
-    kortste = perm[0] + perm[3] + perm[5];
-    if(perm[0] + perm[4] + perm[5] < kortste)
-    {
-        kortste = perm[0] + perm[4] + perm[5];
-        volgorde = 1;
-    }
-    if(perm[1] + perm[3] + perm[4] < kortste)
-    {
-        kortste = perm[1] + perm[3] + perm[4];
-        volgorde = 2;
-    }
-    if(perm[1] + perm[5] + perm[4] < kortste)
-    {
-        kortste = perm[1] + perm[5] + perm[4];
-        volgorde = 3;
-    }
-    if(perm[2] + perm[4] + perm[3] < kortste)
-    {
-        kortste = perm[2] + perm[4] + perm[3];
-        volgorde = 4;
-    }
-    if(perm[2] + perm[5] + perm[3] < kortste)
-    {
-        kortste = perm[2] + perm[5] + perm[3];
-        volgorde = 5;
-    }
+    /*De kortste route bepalen*/
+    kortste = routeSegmentLength[0] + routeSegmentLength[3] + routeSegmentLength[5];
+    if(routeSegmentLength[0] + routeSegmentLength[4] + routeSegmentLength[5] < kortste)
+        kortste = routeSegmentLength[0] + routeSegmentLength[4] + routeSegmentLength[5];
+    if(routeSegmentLength[1] + routeSegmentLength[3] + routeSegmentLength[4] < kortste)
+        kortste = routeSegmentLength[1] + routeSegmentLength[3] + routeSegmentLength[4];
+    if(routeSegmentLength[1] + routeSegmentLength[5] + routeSegmentLength[4] < kortste)
+        kortste = routeSegmentLength[1] + routeSegmentLength[5] + routeSegmentLength[4];
+    if(routeSegmentLength[2] + routeSegmentLength[4] + routeSegmentLength[3] < kortste)
+        kortste = routeSegmentLength[2] + routeSegmentLength[4] + routeSegmentLength[3];
+    if(routeSegmentLength[2] + routeSegmentLength[5] + routeSegmentLength[3] < kortste)
+        kortste = routeSegmentLength[2] + routeSegmentLength[5] + routeSegmentLength[3];
 
-    return volgorde;
+
+    if (kortste == (routeSegmentLength[0] + routeSegmentLength[4] + routeSegmentLength[5]))
+        swapInput(2, 3);
+    if (kortste == (routeSegmentLength[1] + routeSegmentLength[3] + routeSegmentLength[4]))
+        swapInput(1, 2);
+    if (kortste == (routeSegmentLength[1] + routeSegmentLength[5] + routeSegmentLength[4])) {
+        swapInput(1, 2);
+        swapInput(2, 3);
+    }
+    if (kortste == (routeSegmentLength[2] + routeSegmentLength[4] + routeSegmentLength[3])) {
+        swapInput(1, 2);
+        swapInput(1, 3);
+    }
+    if (kortste == (routeSegmentLength[2] + routeSegmentLength[5] + routeSegmentLength[3]))
+        swapInput(1, 3);
+
+
 }
 

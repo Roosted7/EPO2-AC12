@@ -4,10 +4,6 @@
 
 #include "support.c"
 
-/*  Verhouding tijd bocht vs rechtdoor  */
-#define BOCHTWEGING 2
-#define WEGENWEGING 1
-
 
 int plattegrond[13][13] =
 {
@@ -26,7 +22,7 @@ int plattegrond[13][13] =
     { -1, -1, -1, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1}
 };
 
-int input[4][3];
+int input[4][3], int route[100];
 
 
 void route(int startpunt, int eindpunt) {
@@ -381,75 +377,15 @@ void printInput() {
 
 int main()
 {
-    int volgorde;
 
     printf("MAZE ROUTER V5\n\nVoer een station in waarbij de robot start, gevolgd door drie stations die \nbezocht moeten worden. Scheid alle stations met een spatie of enter tijdens \nhet invoerproces.\n\n");
 
     readInput();
     printInput();
 
-    volgorde = bepaalVolgorde();
+    sorteerInput();
+    printInput();
 
-    printf("volgorde: %d\n", volgorde);
-
-    /*De kortste volgorde*/
-    switch(volgorde)
-    {
-    case 0 :
-        /*Volgorde 0 1 2 3*/
-        route(input[0], input[1]);
-        printf("\nDraai volledig om richting het speelveld en\n");
-        route(input[1], input[2]);
-        printf("\nDraai volledig om richting het speelveld\n");
-        route(input[2], input[3]);
-        printf("\nAlle stations bezocht\n");
-        break;
-    case 1 :
-        /*Volgorde 0 1 3 2*/
-        route(input[0], input[1]);
-        printf("\nDraai volledig om richting het speelveld en\n");
-        route(input[1], input[3]);
-        printf("\nDraai volledig om richting het speelveld\n");
-        route(input[3], input[2]);
-        printf("\nAlle stations bezocht\n");
-        break;
-    case 2 :
-        /*Volgorde 0 2 1 3*/
-        route(input[0], input[2]);
-        printf("\nDraai volledig om richting het speelveld en\n");
-        route(input[2], input[1]);
-        printf("\nDraai volledig om richting het speelveld\n");
-        route(input[1], input[3]);
-        printf("\nAlle stations bezocht\n");
-        break;
-    case 3 :
-        /*Volgorde 0 2 3 1*/
-        route(input[0], input[2]);
-        printf("\nDraai volledig om richting het speelveld en\n");
-        route(input[2], input[3]);
-        printf("\nDraai volledig om richting het speelveld\n");
-        route(input[3], input[1]);
-        printf("\nAlle stations bezocht\n");
-        break;
-    case 4 :
-        /*Volgorde 0 3 1 2*/
-        route(input[0], input[3]);
-        printf("\nDraai volledig om richting het speelveld en\n");
-        route(input[3], input[1]);
-        printf("\nDraai volledig om richting het speelveld\n");
-        route(input[1], input[2]);
-        printf("\nAlle stations bezocht\n");
-        break;
-    case 5 :
-        /*Volgorde 0 3 2 1*/
-        route(input[0], input[3]);
-        printf("\nDraai volledig om richting het speelveld en\n");
-        route(input[3], input[2]);
-        printf("\nDraai volledig om richting het speelveld\n");
-        route(input[2], input[1]);
-        printf("\nAlle stations bezocht\n");
-        break;
-    }
     return 0;
 
 }
