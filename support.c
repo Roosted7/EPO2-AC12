@@ -127,3 +127,18 @@ void setCurrentWaypoint (int curPos[]) {
 }
 
 
+void markMine(int minePos[]) {
+
+    map[minePos[0]][minePos[1]] = -1;
+
+}
+
+void flipCurrentWaypointDir () {
+
+    if (waypoints[0][2] % 2) {
+        waypoints[0][2]++;
+    } else {
+        waypoints[0][2]--;
+    }
+
+}

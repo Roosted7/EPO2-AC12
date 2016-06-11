@@ -29,7 +29,7 @@ int map[13][13] =
     { -1, -1, -1, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1}
 };
 
-int waypoints[4][3], route[100][4], routeLength;
+int waypoints[4][3], route[100][4], routeLength, robotDone = 0;
 
 void readInput () {
 
@@ -50,6 +50,7 @@ void readInput () {
     }
 }
 
+
 int main()
 {
 
@@ -63,13 +64,16 @@ int main()
     readInput();
     printWaypoints();
 
-    sortWaypoints();
-    printWaypoints();
+    while (!robotDone) {
 
-    fillRouteArray();
-    printRoute();
+        sortWaypoints();
+        printWaypoints();
 
-    driveRoute();
+        fillRouteArray();
+        printRoute();
+
+        driveRoute();
+    }
 
     printf("\nEnd of route! Program exiting :( Bye!\n\n");
 

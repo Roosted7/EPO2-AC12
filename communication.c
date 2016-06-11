@@ -15,8 +15,8 @@
 #define hexMineDetected 0x30 
 
 unsigned char inBuf[BUF_SIZE];
-
 int serialNotConnected = 1, robotDriving = 1, routeStep, waypointStep;
+extern int robotDone;
 
 
 void emptyBuf () {
@@ -54,11 +54,23 @@ void stopSerial () {
 
 void sendRoute () {
 
+    int minePos[2];
+
     if (inBuf[0] != 0) { 
 
     	if (inBuf[0] == hexMineDetected) {
 
-    		printf("Mine detected!\n");
+            minePos[0] = (route[routeStep][0] + route[routeStep + 1][0]) / 2.0;
+            minePos[1] = (route[routeStep][1] + route[routeStep + 1][1]) / 2.0;
+
+
+            printf("\nMine detected! On position: \t %d-%d\n", minePos[0], minePos[1]);
+
+            markMine(minePos);
+
+            flipCurrentWaypointDir();
+
+            robotDriving = 0;            
 
     	} else if (inBuf[0] == hexRequestCommand) {    		
 
@@ -102,8 +114,10 @@ void sendRoute () {
 
     		setCurrentWaypoint(route[routeStep]);
 
-    		if (route[routeStep + 1][0] == -1 && route[routeStep + 1][1] == -1)
+    		if (route[routeStep + 1][0] == -1 && route[routeStep + 1][1] == -1) {
     			robotDriving = 0;
+                robotDone = 1;
+            }
 
     	} else {
     		printf("Received serial garbage: %X\n", inBuf[0]);
@@ -120,7 +134,7 @@ void driveRoute () {
     } else {
         
     	robotDriving = 1;
-    	routeStep = 1;
+    	routeStep = 0;
     	waypointStep = 1;
     	inBuf[0] = hexRequestCommand;
 
