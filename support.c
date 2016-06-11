@@ -1,8 +1,5 @@
-#define BUF_SIZE 50
-
 
 extern int map[13][13], waypoints[4][3], route[100][4], routeLength;
-extern unsigned char inBuf[BUF_SIZE];
 
 void printMaze () {
 
@@ -36,7 +33,7 @@ void printRoute () {
 
     printf("Printing the Route Array:\n");
 
-    for (i = 0; i < routeLength; i++) {
+    for (i = 0; i <= routeLength; i++) {
         for (j = 0; j < 4; j++)
             printf("%d  ", route[i][j]);
         printf("\n");
@@ -76,21 +73,7 @@ int yPos (int punt) {
     return 99;
 }
 
-
-int richtingStationBegin (int punt) {
-
-    if (punt == 1 || punt == 2 || punt == 3)
-        return 2;
-    if (punt == 4 || punt == 5 || punt == 6)
-        return 4;
-    if (punt == 7 || punt == 8 || punt == 9)
-        return 1;
-    if (punt == 10 || punt == 11 || punt == 12)
-        return 3;
-    return 99;
-}
-
-int richtingStationHalverwege (int punt) {
+int richtingStation (int punt) {
 
     if (punt == 1 || punt == 2 || punt == 3)
         return 1;
@@ -115,10 +98,6 @@ int k_copyPoint(int punt[], int k) {
     return k - 2;
 }
 
-
-
-
-
 void swapWaypoints (int swap1, int swap2) {
 
     int i, tempInput;
@@ -131,5 +110,20 @@ void swapWaypoints (int swap1, int swap2) {
     
 }
 
+void removeWaypoint (int waypointStep) {
+
+    int i;
+
+    for (i = 0; i < 3; i++)
+        waypoints[waypointStep][i] = 99;
+}
+
+void setCurrentWaypoint (int curPos[]) {
+
+    int i;
+
+    for (i = 0; i < 3; i++)
+        waypoints[0][i] = curPos[i];
+}
 
 

@@ -1,17 +1,14 @@
+
 #define BOCHT_WEGING 7
 #define WEGEN_WEGING 6
 
 
-#define BUF_SIZE 50
-
-
 extern int map[13][13], waypoints[4][3], route[100][4], routeLength;
-extern unsigned char inBuf[BUF_SIZE];
 
 
-void fillMap(int startc[], int eindc[]) {
+void emptyMap () {
 
-    int i, j, k;
+    int i, j;
 
     for (i=0; i<13; i++)
     {
@@ -21,6 +18,13 @@ void fillMap(int startc[], int eindc[]) {
                 map[i][j] = 0;
         }
     }
+}
+
+void fillMap(int startc[], int eindc[]) {
+
+    int i, j, k;
+
+    emptyMap();
 
     map[eindc[0]][eindc[1]] = 1;
 
@@ -231,9 +235,8 @@ int saveRouteSteps (int startC[], int endC[]) {
 
     }
 
-    route[routeLength - 2][3] += 10;
-
-    printf("K: %d, routeL: %d\n", k, routeLength);
+    route[routeLength - 1][3] = route[routeLength - 2][3] + 10;
+    route[routeLength - 2][3] = 0;
 
     return routeLength;
 

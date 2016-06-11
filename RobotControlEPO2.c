@@ -9,7 +9,7 @@
 #include "route.c"
 #include "communication.c"
 
-#define PRODUCT_VERSION "1.3"
+#define PRODUCT_VERSION "1.4"
 
 
 int map[13][13] =
@@ -30,8 +30,6 @@ int map[13][13] =
 };
 
 int waypoints[4][3], route[100][4], routeLength;
-unsigned char inBuf[BUF_SIZE];
-
 
 void readInput () {
 
@@ -44,9 +42,7 @@ void readInput () {
         if (rawInput[i] > -1 && rawInput[i] < 13) {
             waypoints[i][0] = yPos(rawInput[i]);
             waypoints[i][1] = xPos(rawInput[i]);
-            waypoints[i][2] = richtingStationHalverwege(rawInput[i]);
-            if (i == 0)
-                waypoints[i][2] = richtingStationBegin(rawInput[i]);
+            waypoints[i][2] = richtingStation(rawInput[i]);
         } else {
             printf("Please check your input!\nTry again: ");
             i--;
@@ -75,5 +71,8 @@ int main()
 
     driveRoute();
 
+    printf("\nEnd of route! Program exiting :( Bye!\n\n");
+
+    stopSerial();
     return 0;
 }
