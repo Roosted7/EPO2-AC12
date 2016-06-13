@@ -1,6 +1,6 @@
 #define SERIAL_PORT 0 /* 0 for internal, 16 for USB */
 
-#define BUF_SIZE 3
+#define BUF_SIZE 100
 
 #define hexStop 0x80
 #define hexStraight 0x81
@@ -15,7 +15,7 @@
 #define hexMineDetected 0x30 
 
 unsigned char inBuf[BUF_SIZE];
-int serialNotConnected = 1, robotDriving = 1, routeStep, waypointStep;
+int serialNotConnected = 1, robotDriving = 1, routeStep, waypointStep, removeWaypointNextStep = 0, lastStep = 0;
 extern int robotDone;
 extern char challengeType;
 
@@ -43,9 +43,9 @@ void setupSerial () {
 }
 
 void getSerial () {
-
-    emptyBuf();
+    
     usleep(100000);
+    emptyBuf();
     RS232_PollComport(SERIAL_PORT, inBuf, BUF_SIZE);
 }
 
@@ -55,14 +55,25 @@ void stopSerial () {
 
 void sendRoute () {
 
-    int minePos[2];
+    int minePos[2], i = 0;
+
 
     if (inBuf[0] != 0) { 
 
+        printf("Current routeStep: %d = %d-%d", routeStep, route[routeStep][0], route[routeStep][1]);
+
+
     	if (inBuf[0] == hexMineDetected && challengeType == 'B') {
 
-            minePos[0] = (route[routeStep][0] + route[routeStep + 1][0]) / 2.0;
-            minePos[1] = (route[routeStep][1] + route[routeStep + 1][1]) / 2.0;
+            removeWaypointNextStep = 0;
+            lastStep = 0;
+
+            while (route[routeStep - 1][3] == 0) {
+                routeStep--;
+            }
+
+            minePos[0] = (route[routeStep - 1 - i][0] + route[routeStep][0]) / 2.0;
+            minePos[1] = (route[routeStep - 1 - i][1] + route[routeStep][1]) / 2.0;
 
 
             printf("\nMine detected! On position: \t %d-%d\n", minePos[0], minePos[1]);
@@ -71,18 +82,26 @@ void sendRoute () {
 
 
 
-            setCurrentWaypoint(route[routeStep]);
-            flipNextWaypointDir(route[routeStep + 1]);
+            setCurrentWaypoint(route[routeStep - 1 - i]);
+            flipNextWaypointDir(route[routeStep]);
 
             robotDriving = 0;            
 
     	} else if (inBuf[0] == hexRequestCommand) {    		
 
-
     		do {
     			routeStep++;
     		} while (route[routeStep][3] == 0);
 
+            if (removeWaypointNextStep) {
+                printf("Removing waypoint: %d\n", waypointStep);
+                removeWaypoint(waypointStep++);
+                removeWaypointNextStep = 0;
+            }
+            if (lastStep) {
+                robotDriving = 0;
+                robotDone = 1;
+            } 
 
     		switch (route[routeStep][3]) {
     			case 1 :
@@ -100,27 +119,29 @@ void sendRoute () {
     			case 11 :
     				RS232_SendByte(SERIAL_PORT, hexStraightStation);
     				printf("\nSend robot command: \thexStraightStation (%X)\n", hexStraightStation);
-    				removeWaypoint(waypointStep++);
+    				removeWaypointNextStep = 1;
     				break;
     			case 12 :
     				RS232_SendByte(SERIAL_PORT, hexLeftStation);
     				printf("\nSend robot command: \thexLeftStation (%X)\n", hexLeftStation);
-    				removeWaypoint(waypointStep++);
+                    removeWaypointNextStep = 1;
     				break;
     			case 13 :
     				RS232_SendByte(SERIAL_PORT, hexRightStation);
     				printf("\nSend robot command: \thexRightStation (%X)\n", hexRightStation);
-    				removeWaypoint(waypointStep++);
+                    removeWaypointNextStep = 1;
     				break;
     		}
+
+            printf("removeWaypointNextStep: %d\n", removeWaypointNextStep);
+
 
     		printf("Robot is driving from: \t%d -%d \tto: %d - %d\n", route[routeStep][0], route[routeStep][1], route[routeStep + 1][0], route[routeStep + 1][1]);
 
     		setCurrentWaypoint(route[routeStep]);
 
     		if (route[routeStep + 1][0] == -1 && route[routeStep + 1][1] == -1) {
-    			robotDriving = 0;
-                robotDone = 1;
+    			lastStep = 1;
             }
 
     	} else {
