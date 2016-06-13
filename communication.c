@@ -17,6 +17,7 @@
 unsigned char inBuf[BUF_SIZE];
 int serialNotConnected = 1, robotDriving = 1, routeStep, waypointStep;
 extern int robotDone;
+extern char challengeType;
 
 
 void emptyBuf () {
@@ -58,7 +59,7 @@ void sendRoute () {
 
     if (inBuf[0] != 0) { 
 
-    	if (inBuf[0] == hexMineDetected) {
+    	if (inBuf[0] == hexMineDetected && challengeType == 'B') {
 
             minePos[0] = (route[routeStep][0] + route[routeStep + 1][0]) / 2.0;
             minePos[1] = (route[routeStep][1] + route[routeStep + 1][1]) / 2.0;

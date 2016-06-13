@@ -30,10 +30,13 @@ int map[13][13] =
 };
 
 int waypoints[4][3], route[100][4], routeLength, robotDone = 0, numWaypoints;
+char challengeType;
 
 void readInput () {
 
     int rawInput[4], i;
+
+     printf("\n\nEnter first the starting point, and then 3 destinations:\n");
 
     for(i = 0; i < 4; i++) {
 
@@ -50,12 +53,25 @@ void readInput () {
     }
 }
 
-void overWriteInput () {
+void readChallenge () {
 
-    scanf("%d", &waypoints[0][0]); 
-    scanf("%d", &waypoints[0][1]);   
-    scanf("%d", &waypoints[0][2]);   
-  
+    char inChar;
+
+    printf("Please enter the challenge the robot has to complete ('A' or 'B'): ");
+    scanf("%c", &inChar);
+
+    if (inChar == 'a' || inChar == 'A') {
+        challengeType = 'A';
+    } else if (inChar == 'b' || inChar == 'B') {
+        challengeType = 'B';
+    } else if (inChar == 'c' || inChar == 'C') {
+        printf("Not yet implemented!\n");
+        readChallenge();
+    } else {
+        printf("Invalid input! Please try again:\n");
+        readChallenge();
+    }
+
 }
 
 
@@ -67,10 +83,9 @@ int main()
 
     setupSerial();
 
-    printf("\n\nEnter first the starting point, and then 3 destinations:\n");
+    readChallenge();
 
     readInput();
-    /*overWriteInput();*/
     printWaypoints();
 
     while (!robotDone) {
