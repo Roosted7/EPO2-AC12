@@ -9,7 +9,7 @@
 #include "route.c"
 #include "communication.c"
 
-#define PRODUCT_VERSION "1.4"
+#define PRODUCT_VERSION "1.5"
 
 
 int map[13][13] =
@@ -29,7 +29,7 @@ int map[13][13] =
     { -1, -1, -1, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1}
 };
 
-int waypoints[4][3], route[100][4], routeLength, robotDone = 0;
+int waypoints[4][3], route[100][4], routeLength, robotDone = 0, numWaypoints;
 
 void readInput () {
 
@@ -50,6 +50,14 @@ void readInput () {
     }
 }
 
+void overWriteInput () {
+
+    scanf("%d", &waypoints[0][0]); 
+    scanf("%d", &waypoints[0][1]);   
+    scanf("%d", &waypoints[0][2]);   
+  
+}
+
 
 int main()
 {
@@ -62,6 +70,7 @@ int main()
     printf("\n\nEnter first the starting point, and then 3 destinations:\n");
 
     readInput();
+    /*overWriteInput();*/
     printWaypoints();
 
     while (!robotDone) {

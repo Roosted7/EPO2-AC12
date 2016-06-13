@@ -68,7 +68,10 @@ void sendRoute () {
 
             markMine(minePos);
 
-            flipCurrentWaypointDir();
+
+
+            setCurrentWaypoint(route[routeStep]);
+            flipNextWaypointDir(route[routeStep + 1]);
 
             robotDriving = 0;            
 
@@ -134,7 +137,7 @@ void driveRoute () {
     } else {
         
     	robotDriving = 1;
-    	routeStep = 0;
+    	routeStep = -1;
     	waypointStep = 1;
     	inBuf[0] = hexRequestCommand;
 

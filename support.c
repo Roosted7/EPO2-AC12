@@ -124,6 +124,7 @@ void setCurrentWaypoint (int curPos[]) {
 
     for (i = 0; i < 3; i++)
         waypoints[0][i] = curPos[i];
+
 }
 
 
@@ -133,12 +134,12 @@ void markMine(int minePos[]) {
 
 }
 
-void flipCurrentWaypointDir () {
+void flipNextWaypointDir (int curPos[]) {
 
-    if (waypoints[0][2] % 2) {
-        waypoints[0][2]++;
+    if (curPos[2] % 2) {
+        waypoints[0][2] = curPos[2] + 1;
     } else {
-        waypoints[0][2]--;
+        waypoints[0][2] = curPos[2] - 1;
     }
 
 }

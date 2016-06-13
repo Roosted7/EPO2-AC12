@@ -3,7 +3,7 @@
 #define WEGEN_WEGING 6
 
 
-extern int map[13][13], waypoints[4][3], route[100][4], routeLength;
+extern int map[13][13], waypoints[4][3], route[100][4], routeLength, numWaypoints;
 
 
 void emptyMap () {
@@ -47,10 +47,13 @@ void fillMap(int startc[], int eindc[]) {
         }
     }
 
-    if (k == 90)
+    if (k == 90) {
+        printf("\nOH NO!\nI was asked to fill from: (%d, %d) to (%d, %d)\n", startc[0], startc[1], eindc[0], eindc[1]);
+        printWaypoints();
+        printMaze();
         exit(90);
+    }
 }
-
 
 int segmentLength (int startc[], int eindc[]) {
 
@@ -128,21 +131,13 @@ void fillRouteArray () {
             route[i][j] = 0;
     }
 
-    routeLength = 2;
+    routeLength = 1;
 
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < 3; i++)
         route[0][i] = waypoints[0][i];
-        route[1][i] = waypoints[1][i];
-    }
 
-    for (i = 0; i < 3; i++) {
-        if (waypoints[i+1][0] == 99 && waypoints[i+1][1] == 99) {
-            routeLength = saveRouteSteps(waypoints[i], waypoints[i+2]);
-            i++;
-        } else {
-            routeLength = saveRouteSteps(waypoints[i], waypoints[i+1]);
-        }
-    }
+    for (i = 0; i < numWaypoints; i++)
+        routeLength = saveRouteSteps(waypoints[i], waypoints[i + 1]);
 
     for (i = 0; i < 4; i++) {
         route[routeLength][i] = -1;
@@ -245,41 +240,82 @@ int saveRouteSteps (int startC[], int endC[]) {
 
 void sortWaypoints () {
 
-    int i, kortste, segmLength[6], numWaypoints = 3;
+    int i, kortste, segmLength[6], lastWaypoint = 3;
 
-    /*Alle routes tussen de stations berekenen en opslaan in de array perm*/
-    segmLength[0] = segmentLength(waypoints[0],waypoints[1]);
-    segmLength[1] = segmentLength(waypoints[0],waypoints[2]);
-    segmLength[2] = segmentLength(waypoints[0],waypoints[3]);
-    segmLength[3] = segmentLength(waypoints[1],waypoints[2]);
-    segmLength[4] = segmentLength(waypoints[1],waypoints[3]);
-    segmLength[5] = segmentLength(waypoints[2],waypoints[3]);
+    numWaypoints = 3;
 
-    /*De kortste route bepalen*/
-    kortste = segmLength[0] + segmLength[3] + segmLength[5];
-    if(segmLength[0] + segmLength[4] + segmLength[5] < kortste)
-        kortste = segmLength[0] + segmLength[4] + segmLength[5];
-    if(segmLength[1] + segmLength[3] + segmLength[4] < kortste)
-        kortste = segmLength[1] + segmLength[3] + segmLength[4];
-    if(segmLength[1] + segmLength[5] + segmLength[4] < kortste)
-        kortste = segmLength[1] + segmLength[5] + segmLength[4];
-    if(segmLength[2] + segmLength[4] + segmLength[3] < kortste)
-        kortste = segmLength[2] + segmLength[4] + segmLength[3];
-    if(segmLength[2] + segmLength[5] + segmLength[3] < kortste)
-        kortste = segmLength[2] + segmLength[5] + segmLength[3];
+    for (i = 1; i < 4; i++) {
+        if (waypoints[i][0] == 99 && waypoints[i][1] == 99)
+            numWaypoints--;
+    }
 
-    if (kortste == (segmLength[0] + segmLength[4] + segmLength[5])) {
-        swapWaypoints(2, 3);
-    } else if (kortste == (segmLength[1] + segmLength[3] + segmLength[4])) {
-        swapWaypoints(1, 2);
-    } else if (kortste == (segmLength[1] + segmLength[5] + segmLength[4])) {
-        swapWaypoints(1, 2);
-        swapWaypoints(2, 3);
-    } else if (kortste == (segmLength[2] + segmLength[4] + segmLength[3])) {
-        swapWaypoints(1, 2);
-        swapWaypoints(1, 3);
-    } else if (kortste == (segmLength[2] + segmLength[5] + segmLength[3])) {
-        swapWaypoints(1, 3);
+
+    for (i = 1; i < 4; i++) {
+
+        if (waypoints[i][0] == 99 && waypoints[i][1] == 99) {
+
+            while (waypoints[lastWaypoint][0] == 99 && waypoints[lastWaypoint][1] == 99 && lastWaypoint > i)
+                lastWaypoint--;
+            swapWaypoints(i, lastWaypoint);
+        }
+
+    }  
+
+
+    printf("\nNumber of waypoints: %d\n", numWaypoints);
+    printWaypoints();
+
+
+    if (numWaypoints == 3) {
+
+        /*Alle routes tussen de stations berekenen en opslaan in de array perm*/
+        segmLength[0] = segmentLength(waypoints[0],waypoints[1]);
+        segmLength[1] = segmentLength(waypoints[0],waypoints[2]);
+        segmLength[2] = segmentLength(waypoints[0],waypoints[3]);
+        segmLength[3] = segmentLength(waypoints[1],waypoints[2]);
+        segmLength[4] = segmentLength(waypoints[1],waypoints[3]);
+        segmLength[5] = segmentLength(waypoints[2],waypoints[3]);
+
+        /*De kortste route bepalen*/
+        kortste = segmLength[0] + segmLength[3] + segmLength[5];
+        if(segmLength[0] + segmLength[4] + segmLength[5] < kortste)
+            kortste = segmLength[0] + segmLength[4] + segmLength[5];
+        if(segmLength[1] + segmLength[3] + segmLength[4] < kortste)
+            kortste = segmLength[1] + segmLength[3] + segmLength[4];
+        if(segmLength[1] + segmLength[5] + segmLength[4] < kortste)
+            kortste = segmLength[1] + segmLength[5] + segmLength[4];
+        if(segmLength[2] + segmLength[4] + segmLength[3] < kortste)
+            kortste = segmLength[2] + segmLength[4] + segmLength[3];
+        if(segmLength[2] + segmLength[5] + segmLength[3] < kortste)
+            kortste = segmLength[2] + segmLength[5] + segmLength[3];
+
+        if (kortste == (segmLength[0] + segmLength[4] + segmLength[5])) {
+            swapWaypoints(2, 3);
+        } else if (kortste == (segmLength[1] + segmLength[3] + segmLength[4])) {
+            swapWaypoints(1, 2);
+        } else if (kortste == (segmLength[1] + segmLength[5] + segmLength[4])) {
+            swapWaypoints(1, 2);
+            swapWaypoints(2, 3);
+        } else if (kortste == (segmLength[2] + segmLength[4] + segmLength[3])) {
+            swapWaypoints(1, 2);
+            swapWaypoints(1, 3);
+        } else if (kortste == (segmLength[2] + segmLength[5] + segmLength[3])) {
+            swapWaypoints(1, 3);
+        }
+
+    } else if (numWaypoints == 2) {
+
+        segmLength[0] = segmentLength(waypoints[0], waypoints[1]);
+        segmLength[1] = segmentLength(waypoints[0], waypoints[2]);
+        segmLength[2] = segmentLength(waypoints[1], waypoints[2]);
+
+
+        kortste = segmLength[0] + segmLength[2];
+
+        if ( (segmLength[1] + segmLength[2]) < kortste)
+            swapWaypoints(1, 2); 
+
+
     }
 
 
