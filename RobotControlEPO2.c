@@ -4,32 +4,15 @@
 
 #include "rs232.c"
 
-
 #include "support.c"
+/*#include "map.c"*/
 #include "route.c"
 #include "communication.c"
 
 #define PRODUCT_VERSION "1.5"
 
 
-int map[13][13] =
-{
-    { -1, -1, -1, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1},
-    { -1, -1, -1, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1},
-    { -1, -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1},
-    { -1, -1,  0, -1,  0, -1,  0, -1,  0, -1,  0, -1, -1},
-    {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-    { -1, -1,  0, -1,  0, -1,  0, -1,  0, -1,  0, -1, -1},
-    {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-    { -1, -1,  0, -1,  0, -1,  0, -1,  0, -1,  0, -1, -1},
-    {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-    { -1, -1,  0, -1,  0, -1,  0, -1,  0, -1,  0, -1, -1},
-    { -1, -1,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1},
-    { -1, -1, -1, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1},
-    { -1, -1, -1, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1}
-};
-
-int waypoints[4][3], route[100][4], routeLength, robotDone = 0, numWaypoints;
+int map[13][13][2], waypoints[4][3], route[100][4], routeLength, robotDone = 0, numWaypoints;
 char challengeType;
 
 void readInput () {
@@ -82,6 +65,8 @@ int main()
     printf("Opening serial port:\n");
 
     setupSerial();
+    makeMap();
+    printMaze();
 
     readChallenge();
 

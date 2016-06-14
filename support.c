@@ -1,5 +1,6 @@
 
-extern int map[13][13], waypoints[4][3], route[100][4], routeLength;
+extern int map[13][13][2], waypoints[4][3], route[100][4], routeLength;
+
 
 void printMaze () {
 
@@ -9,7 +10,7 @@ void printMaze () {
 
     for (i = 0; i < 13; i++) {
         for (j = 0; j < 13; j++)
-            printf("%d\t", map[i][j]);
+            printf("%d\t", map[i][j][0]);
         printf("\n");
     }
 }
@@ -130,7 +131,7 @@ void setCurrentWaypoint (int curPos[]) {
 
 void markMine(int minePos[]) {
 
-    map[minePos[0]][minePos[1]] = -1;
+    map[minePos[0]][minePos[1]][0] = -1;
 
 }
 

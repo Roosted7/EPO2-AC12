@@ -60,8 +60,6 @@ void sendRoute () {
 
     if (inBuf[0] != 0) { 
 
-        printf("Current routeStep: %d = %d-%d", routeStep, route[routeStep][0], route[routeStep][1]);
-
 
     	if (inBuf[0] == hexMineDetected && challengeType == 'B') {
 
@@ -94,10 +92,10 @@ void sendRoute () {
     		} while (route[routeStep][3] == 0);
 
             if (removeWaypointNextStep) {
-                printf("Removing waypoint: %d\n", waypointStep);
                 removeWaypoint(waypointStep++);
                 removeWaypointNextStep = 0;
             }
+
             if (lastStep) {
                 robotDriving = 0;
                 robotDone = 1;
@@ -132,9 +130,6 @@ void sendRoute () {
                     removeWaypointNextStep = 1;
     				break;
     		}
-
-            printf("removeWaypointNextStep: %d\n", removeWaypointNextStep);
-
 
     		printf("Robot is driving from: \t%d -%d \tto: %d - %d\n", route[routeStep][0], route[routeStep][1], route[routeStep + 1][0], route[routeStep + 1][1]);
 

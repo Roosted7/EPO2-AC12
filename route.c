@@ -3,57 +3,10 @@
 #define WEGEN_WEGING 6
 
 
-extern int map[13][13], waypoints[4][3], route[100][4], routeLength, numWaypoints;
+extern int map[13][13][2], waypoints[4][3], route[100][4], routeLength, numWaypoints;
 
 
-void emptyMap () {
 
-    int i, j;
-
-    for (i=0; i<13; i++)
-    {
-        for (j=0; j<13; j++)
-        {
-            if (map[i][j] > 0)
-                map[i][j] = 0;
-        }
-    }
-}
-
-void fillMap(int startc[], int eindc[]) {
-
-    int i, j, k;
-
-    emptyMap();
-
-    map[eindc[0]][eindc[1]] = 1;
-
-    /*Zolang de startpositie nog niet bereikt is*/
-    for (k = 1; (map[startc[0]][startc[1]] == 0) && (k < 90); k++) {
-        for (i=0; i<13; i++) {
-            for (j=0; j<13; j++) {
-                if(map[i][j] == k)
-                {
-                    if (i < 12 && map[i+1][j] == 0)
-                            map[i+1][j] = k + 1;
-                    if (i > 0 && map[i-1][j] == 0)
-                            map[i-1][j] = k + 1;
-                    if (j < 12 && map[i][j+1] == 0)
-                            map[i][j+1] = k + 1;
-                    if (j > 0 && map[i][j-1] == 0)
-                            map[i][j-1] = k + 1;
-                }
-            }
-        }
-    }
-
-    if (k == 90) {
-        printf("\nOH NO!\nI was asked to fill from: (%d, %d) to (%d, %d)\n", startc[0], startc[1], eindc[0], eindc[1]);
-        printWaypoints();
-        printMaze();
-        exit(90);
-    }
-}
 
 int segmentLength (int startc[], int eindc[]) {
 
@@ -67,49 +20,49 @@ int segmentLength (int startc[], int eindc[]) {
     for (k = 0; k < 3; k++)
         punt[k] = startc[k];
 
-    k = map[startc[0]][startc[1]];
+    k = map[startc[0]][startc[1]][0];
 
     while(k > 2)
     {
-        if ((punt[0] < 11) && (map[punt[0]+2][punt[1]] == k-2) && (map[punt[0]+1][punt[1]] == k-1) && (punt[2] == 1)) {
+        if ((punt[0] < 11) && (map[punt[0]+2][punt[1]][0] == k-2) && (map[punt[0]+1][punt[1]][0] == k-1) && (punt[2] == 1)) {
             rechten++;
             k -= 2;
             punt[0] += 2;
         }
-        else if ((punt[0] > 1) && (map[punt[0]-2][punt[1]] == k-2) && (map[punt[0]-1][punt[1]] == k-1) && (punt[2] == 2)) {
+        else if ((punt[0] > 1) && (map[punt[0]-2][punt[1]][0] == k-2) && (map[punt[0]-1][punt[1]][0] == k-1) && (punt[2] == 2)) {
             rechten++;
             k -= 2;
             punt[0] -= 2;
         }
-        else if ((punt[1] < 11) && (map[punt[0]][punt[1]+2] == k-2) && (map[punt[0]][punt[1]+1] == k-1) && (punt[2] == 3)) {
+        else if ((punt[1] < 11) && (map[punt[0]][punt[1]+2][0] == k-2) && (map[punt[0]][punt[1]+1][0] == k-1) && (punt[2] == 3)) {
             rechten++;
             k -= 2;
             punt[1] += 2;
         }
-        else if ((punt[1] > 1) && (map[punt[0]][punt[1]-2] == k-2) && (map[punt[0]][punt[1]-1] == k-1) && (punt[2] == 4)) {
+        else if ((punt[1] > 1) && (map[punt[0]][punt[1]-2][0] == k-2) && (map[punt[0]][punt[1]-1][0] == k-1) && (punt[2] == 4)) {
             rechten++;
             k -= 2;
             punt[1] -= 2;
         }
-        else if ((punt[0] < 11) && (map[punt[0]+2][punt[1]] == k-2) && (map[punt[0]+1][punt[1]] == k-1)) {
+        else if ((punt[0] < 11) && (map[punt[0]+2][punt[1]][0] == k-2) && (map[punt[0]+1][punt[1]][0] == k-1)) {
             bochten++;
             k -= 2;
             punt[2] = 1;
             punt[0] += 2;
         }
-        else if ((punt[0] > 1) && (map[punt[0]-2][punt[1]] == k-2) && (map[punt[0]-1][punt[1]] == k-1)) {
+        else if ((punt[0] > 1) && (map[punt[0]-2][punt[1]][0] == k-2) && (map[punt[0]-1][punt[1]][0] == k-1)) {
             bochten++;
             k -= 2;
             punt[2] = 2;
             punt[0] -= 2;
         }
-        else if ((punt[1] < 11) && (map[punt[0]][punt[1]+2] == k-2) && (map[punt[0]][punt[1]+1] == k-1)) {
+        else if ((punt[1] < 11) && (map[punt[0]][punt[1]+2][0] == k-2) && (map[punt[0]][punt[1]+1][0] == k-1)) {
             bochten++;
             k -= 2;
             punt[2] = 3;
             punt[1] += 2;
         }
-        else if ((punt[1] > 1) && (map[punt[0]][punt[1]-2] == k-2) && (map[punt[0]][punt[1]-1] == k-1)) {
+        else if ((punt[1] > 1) && (map[punt[0]][punt[1]-2][0] == k-2) && (map[punt[0]][punt[1]-1][0] == k-1)) {
             bochten++;
             k -= 2;
             punt[2] = 4;
@@ -152,7 +105,7 @@ int saveRouteSteps (int startC[], int endC[]) {
 
     fillMap(startC, endC);
 
-    k = map[startC[0]][startC[1]];
+    k = map[startC[0]][startC[1]][0];
 
     for (i = 0; i < 3; i++)
         punt[i] = startC[i];
@@ -160,27 +113,27 @@ int saveRouteSteps (int startC[], int endC[]) {
     while(k > 2)
     {
 
-        if ((punt[0] < 11) && (map[punt[0]+2][punt[1]] == k-2) && (map[punt[0]+1][punt[1]] == k-1) && (punt[2] == 1)) {
+        if ((punt[0] < 11) && (map[punt[0]+2][punt[1]][0] == k-2) && (map[punt[0]+1][punt[1]][0] == k-1) && (punt[2] == 1)) {
             punt[0] = punt[0] + 2;
             route[routeLength - 1][3] = 1;
             k = k_copyPoint(punt, k);
         }
-        else if ((punt[0] > 1) && (map[punt[0]-2][punt[1]] == k-2) && (map[punt[0]-1][punt[1]] == k-1) && (punt[2] == 2)) {
+        else if ((punt[0] > 1) && (map[punt[0]-2][punt[1]][0] == k-2) && (map[punt[0]-1][punt[1]][0] == k-1) && (punt[2] == 2)) {
             punt[0] = punt[0] - 2;
             route[routeLength - 1][3] = 1;
             k = k_copyPoint(punt, k);
         }
-        else if ((punt[1] < 11) && (map[punt[0]][punt[1]+2] == k-2) && (map[punt[0]][punt[1]+1] == k-1) && (punt[2] == 3)) {
+        else if ((punt[1] < 11) && (map[punt[0]][punt[1]+2][0] == k-2) && (map[punt[0]][punt[1]+1][0] == k-1) && (punt[2] == 3)) {
             punt[1] = punt[1] + 2;
             route[routeLength - 1][3] = 1;
             k = k_copyPoint(punt, k);
         }
-        else if ((punt[1] > 1) && (map[punt[0]][punt[1]-2] == k-2) && (map[punt[0]][punt[1]-1] == k-1) && (punt[2] == 4)) {
+        else if ((punt[1] > 1) && (map[punt[0]][punt[1]-2][0] == k-2) && (map[punt[0]][punt[1]-1][0] == k-1) && (punt[2] == 4)) {
             punt[1] = punt[1] - 2;
             route[routeLength - 1][3] = 1;
             k = k_copyPoint(punt, k);
         }
-        else if ((punt[0] < 11) && (map[punt[0]+2][punt[1]] == k-2) && (map[punt[0]+1][punt[1]] == k-1)) {
+        else if ((punt[0] < 11) && (map[punt[0]+2][punt[1]][0] == k-2) && (map[punt[0]+1][punt[1]][0] == k-1)) {
             
             if (punt[2] == 4)
                 route[routeLength - 1][3] = 2;
@@ -192,7 +145,7 @@ int saveRouteSteps (int startC[], int endC[]) {
 
             k = k_copyPoint(punt, k);
         }
-        else if ((punt[0] > 1) && (map[punt[0]-2][punt[1]] == k-2) && (map[punt[0]-1][punt[1]] == k-1)) {
+        else if ((punt[0] > 1) && (map[punt[0]-2][punt[1]][0] == k-2) && (map[punt[0]-1][punt[1]][0] == k-1)) {
 
             if (punt[2] == 3)
                 route[routeLength - 1][3] = 2;
@@ -203,7 +156,7 @@ int saveRouteSteps (int startC[], int endC[]) {
             punt[0] = punt[0] - 2;
             k = k_copyPoint(punt, k);
         }
-        else if ((punt[1] < 11) && (map[punt[0]][punt[1]+2] == k-2) && (map[punt[0]][punt[1]+1] == k-1)) {
+        else if ((punt[1] < 11) && (map[punt[0]][punt[1]+2][0] == k-2) && (map[punt[0]][punt[1]+1][0] == k-1)) {
 
             if (punt[2] == 1)
                 route[routeLength - 1][3] = 2;
@@ -214,7 +167,7 @@ int saveRouteSteps (int startC[], int endC[]) {
             punt[1] = punt[1] + 2;
             k = k_copyPoint(punt, k);
         }
-        else if ((punt[1] > 1) && (map[punt[0]][punt[1]-2] == k-2) && (map[punt[0]][punt[1]-1] == k-1)) {
+        else if ((punt[1] > 1) && (map[punt[0]][punt[1]-2][0] == k-2) && (map[punt[0]][punt[1]-1][0] == k-1)) {
 
             if (punt[2] == 2)
                 route[routeLength - 1][3] = 2;
