@@ -1,10 +1,8 @@
-
+/* Include built in library's */
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/time.h>
 
-#include "rs232.c"
-
+#include "rs232.c" /* Include serial library */
 
 #include "support.c"
 #include "route.c"
@@ -12,7 +10,7 @@
 
 #define PRODUCT_VERSION "1.5"
 
-
+ /* Define and initialize variables */
 int map[13][13] =
 {
     { -1, -1, -1, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1},
@@ -33,6 +31,7 @@ int map[13][13] =
 int waypoints[4][3], route[100][4], routeLength, robotDone = 0, numWaypoints;
 char challengeType;
 
+/* Read start point and 3 end points from the user */
 void readInput () {
 
     int rawInput[4], i;
@@ -54,6 +53,7 @@ void readInput () {
     }
 }
 
+/* Read which challenge is going to happen */
 void readChallenge () {
 
     char inChar;
@@ -75,7 +75,7 @@ void readChallenge () {
 
 }
 
-
+/* The main program function, which calls other functions */
 int main()
 {
 

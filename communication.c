@@ -1,6 +1,6 @@
-#define BUF_SIZE 100
+#define BUF_SIZE 100    /* Size for serial buffer */
 
-#define hexStop 0x80
+#define hexStop 0x80    /* Hex values of different commands to send */
 #define hexStraight 0x81
 #define hexLeft 0x84
 #define hexRight 0x82
@@ -19,7 +19,7 @@ extern char challengeType;
 
 struct timeval stop, start;
 
-
+/* Empty the input buffer */
 void emptyBuf () {
 
     int i;
@@ -29,7 +29,7 @@ void emptyBuf () {
 }
 
 
-
+/* Ask for serial port number, and try to open this port */
 void setupSerial () {
 
     char meuk;
@@ -48,9 +48,9 @@ void setupSerial () {
         printf("Serial port succesfully connected!\n");
 
     emptyBuf();
-
 }
 
+/* Read serial data to buffer */
 void getSerial () {
     
     usleep(100000);
@@ -58,25 +58,18 @@ void getSerial () {
     RS232_PollComport(serialPort, inBuf, BUF_SIZE);
 }
 
+/* Close serial connection */
 void stopSerial () {
 	RS232_CloseComport(serialPort);
 }
 
-
-double get_time_ms()
-{
-struct timeval t;
-gettimeofday(&t, NULL);
-return (t.tv_sec + (t.tv_usec / 1000000.0)) * 1000.0;
-}
-
-
+/* Function that checks for new serial data and responds by sending a new command or recalculating the route */
 void sendRoute () {
 
     int minePos[2], i = 0;
 
 
-    if (inBuf[0] != 0) { 
+    if (inBuf[0] != 0) {  /* If we get data */
 
 
         fprintf(stdout, "%lu\n", (unsigned long)time(NULL)); 
@@ -84,7 +77,7 @@ void sendRoute () {
         printf("Current routeStep: %d = %d-%d", routeStep, route[routeStep][0], route[routeStep][1]);
 
 
-    	if (inBuf[0] == hexMineDetected && challengeType == 'B') {
+    	if (inBuf[0] == hexMineDetected && challengeType == 'B') {         /*  Mine detected */
 
             removeWaypointNextStep = 0;
             lastStep = 0;
@@ -108,7 +101,7 @@ void sendRoute () {
 
             robotDriving = 0;            
 
-    	} else if (inBuf[0] == hexRequestCommand) {    		
+    	} else if (inBuf[0] == hexRequestCommand) {                        /* Route clear, next step */   		
 
     		do {
     			routeStep++;
@@ -171,7 +164,7 @@ void sendRoute () {
     }
 }
 
-
+/* This function is called in the main loop when a route is ready and has to be send */
 void driveRoute () {
 
     if (serialNotConnected) {

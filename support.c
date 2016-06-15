@@ -1,7 +1,7 @@
 
 extern int map[13][13], waypoints[4][3], route[100][4], routeLength;
 
-void printMaze () {
+void printMaze () {                     /* This function prints the contents of the Maze */
 
     int i,j;
 
@@ -14,7 +14,7 @@ void printMaze () {
     }
 }
 
-void printWaypoints() {
+void printWaypoints() {                 /* This function prints out the waypoints array */
 
     int i, j;
 
@@ -27,7 +27,7 @@ void printWaypoints() {
     }
 }
 
-void printRoute () {
+void printRoute () {                    /* This function prints out the route array */
 
     int i, j;
 
@@ -42,7 +42,7 @@ void printRoute () {
 }
 
 
-
+/* These next two functions determine the coordinates of a station */
 int xPos (int punt) {
 
     if (punt == 10 || punt == 11 || punt == 12)
@@ -73,6 +73,7 @@ int yPos (int punt) {
     return 99;
 }
 
+/* This function determines the direction the robot will face when it just arrived at a station */
 int richtingStation (int punt) {
 
     if (punt == 1 || punt == 2 || punt == 3)
@@ -86,7 +87,7 @@ int richtingStation (int punt) {
     return 99;
 }
 
-
+/* This function copy's the punt array to the route array and returns a new value for K */
 int k_copyPoint(int punt[], int k) {
     int i;
 
@@ -98,6 +99,7 @@ int k_copyPoint(int punt[], int k) {
     return k - 2;
 }
 
+/* This function swaps two waypoints without using (visible) pointers */
 void swapWaypoints (int swap1, int swap2) {
 
     int i, tempInput;
@@ -110,6 +112,7 @@ void swapWaypoints (int swap1, int swap2) {
     
 }
 
+/* This functions sets a waypoint to all 99's, and removing it */
 void removeWaypoint (int waypointStep) {
 
     int i;
@@ -118,6 +121,7 @@ void removeWaypoint (int waypointStep) {
         waypoints[waypointStep][i] = 99;
 }
 
+/* This function sets the current position and direction in the waypoint array */
 void setCurrentWaypoint (int curPos[]) {
 
     int i;
@@ -127,13 +131,14 @@ void setCurrentWaypoint (int curPos[]) {
 
 }
 
-
+/* This funcion marks a position as a mine */
 void markMine(int minePos[]) {
 
     map[minePos[0]][minePos[1]] = -1;
 
 }
 
+/* This function inverts the direction of a waypoint (usefull when the robot hit a mine) */
 void flipNextWaypointDir (int curPos[]) {
 
     if (curPos[2] % 2) {

@@ -1,11 +1,11 @@
 
-#define BOCHT_WEGING 7
-#define WEGEN_WEGING 6
+#define BOCHT_WEGING 9 /* cost of corner and straight road */
+#define WEGEN_WEGING 8
 
-
+/* Use variables of other files */
 extern int map[13][13], waypoints[4][3], route[100][4], routeLength, numWaypoints;
 
-
+/* Function to remove al previous steps from the map */
 void emptyMap () {
 
     int i, j;
@@ -19,13 +19,12 @@ void emptyMap () {
         }
     }
 }
-
+/* Function to fill the map with counting numbers */
 void fillMap(int startc[], int eindc[]) {
 
     int i, j, k;
 
     emptyMap();
-
     map[eindc[0]][eindc[1]] = 1;
 
     /*Zolang de startpositie nog niet bereikt is*/
@@ -46,7 +45,6 @@ void fillMap(int startc[], int eindc[]) {
             }
         }
     }
-
     if (k == 90) {
         printf("\nOH NO!\nI was asked to fill from: (%d, %d) to (%d, %d)\n", startc[0], startc[1], eindc[0], eindc[1]);
         printWaypoints();
@@ -55,6 +53,7 @@ void fillMap(int startc[], int eindc[]) {
     }
 }
 
+/* Function that returns the length of route between 2 points */
 int segmentLength (int startc[], int eindc[]) {
 
     int k, rechten = 0, bochten = 0, punt[3];
@@ -117,11 +116,11 @@ int segmentLength (int startc[], int eindc[]) {
         }
     }
 
-
     return (BOCHT_WEGING * bochten + WEGEN_WEGING * rechten);
-
 }
 
+
+/* Function that calls the saveRouteSteps function with the correct values */
 void fillRouteArray () {
 
     int i, j;
@@ -142,10 +141,10 @@ void fillRouteArray () {
     for (i = 0; i < 4; i++) {
         route[routeLength][i] = -1;
     }
-
 }
 
 
+/*  Function that saves steps to the route array */
 int saveRouteSteps (int startC[], int endC[]) {
 
     int k, i, punt[3];
@@ -234,10 +233,10 @@ int saveRouteSteps (int startC[], int endC[]) {
     route[routeLength - 2][3] = 0;
 
     return routeLength;
-
 }
 
 
+/* Function that rearranges the waypoints in the fastest order */ 
 void sortWaypoints () {
 
     int i, kortste, segmLength[6], lastWaypoint = 3;
@@ -268,7 +267,7 @@ void sortWaypoints () {
 
     if (numWaypoints == 3) {
 
-        /*Alle routes tussen de stations berekenen en opslaan in de array perm*/
+        /* Compute lenghts of all the permutations */
         segmLength[0] = segmentLength(waypoints[0],waypoints[1]);
         segmLength[1] = segmentLength(waypoints[0],waypoints[2]);
         segmLength[2] = segmentLength(waypoints[0],waypoints[3]);
@@ -276,7 +275,7 @@ void sortWaypoints () {
         segmLength[4] = segmentLength(waypoints[1],waypoints[3]);
         segmLength[5] = segmentLength(waypoints[2],waypoints[3]);
 
-        /*De kortste route bepalen*/
+        /* Check which permutation is the sortest*/
         kortste = segmLength[0] + segmLength[3] + segmLength[5];
         if(segmLength[0] + segmLength[4] + segmLength[5] < kortste)
             kortste = segmLength[0] + segmLength[4] + segmLength[5];
