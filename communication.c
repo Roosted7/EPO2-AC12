@@ -1,5 +1,3 @@
-#define SERIAL_PORT 0 /* 0 for internal, 16 for USB */
-
 #define BUF_SIZE 100
 
 #define hexStop 0x80
@@ -15,9 +13,11 @@
 #define hexMineDetected 0x30 
 
 unsigned char inBuf[BUF_SIZE];
-int serialNotConnected = 1, robotDriving = 1, routeStep, waypointStep, removeWaypointNextStep = 0, lastStep = 0;
+int serialPort, serialNotConnected = 1, robotDriving = 1, routeStep, waypointStep, removeWaypointNextStep = 0, lastStep = 0;
 extern int robotDone;
 extern char challengeType;
+
+struct timeval stop, start;
 
 
 void emptyBuf () {
@@ -32,8 +32,17 @@ void emptyBuf () {
 
 void setupSerial () {
 
-    serialNotConnected = RS232_OpenComport(SERIAL_PORT, 9600, "8N1");
-    RS232_flushRXTX(SERIAL_PORT);
+    char meuk;
+
+    printf("(For windows systems, enter (comport number - 1)\n");
+    printf("(For *NIX systems, use 16 for ttyUSB0 and 0 for ttyS0\n");
+    printf("Please enter serial port number: ");
+    scanf("%d", &serialPort);
+    scanf("%c", &meuk);
+    printf("\n");
+
+    serialNotConnected = RS232_OpenComport(serialPort, 9600, "8N1");
+    RS232_flushRXTX(serialPort);
 
     if (!serialNotConnected)
         printf("Serial port succesfully connected!\n");
@@ -46,12 +55,21 @@ void getSerial () {
     
     usleep(100000);
     emptyBuf();
-    RS232_PollComport(SERIAL_PORT, inBuf, BUF_SIZE);
+    RS232_PollComport(serialPort, inBuf, BUF_SIZE);
 }
 
 void stopSerial () {
-	RS232_CloseComport(SERIAL_PORT);
+	RS232_CloseComport(serialPort);
 }
+
+
+double get_time_ms()
+{
+struct timeval t;
+gettimeofday(&t, NULL);
+return (t.tv_sec + (t.tv_usec / 1000000.0)) * 1000.0;
+}
+
 
 void sendRoute () {
 
@@ -59,6 +77,9 @@ void sendRoute () {
 
 
     if (inBuf[0] != 0) { 
+
+
+        fprintf(stdout, "%lu\n", (unsigned long)time(NULL)); 
 
         printf("Current routeStep: %d = %d-%d", routeStep, route[routeStep][0], route[routeStep][1]);
 
@@ -105,29 +126,29 @@ void sendRoute () {
 
     		switch (route[routeStep][3]) {
     			case 1 :
-    				RS232_SendByte(SERIAL_PORT, hexStraight);
+    				RS232_SendByte(serialPort, hexStraight);
     				printf("\nSend robot command: \thexStraight \t(%X)\n", hexStraight);
     				break;
     			case 2 :
-    				RS232_SendByte(SERIAL_PORT, hexLeft);
+    				RS232_SendByte(serialPort, hexLeft);
     				printf("\nSend robot command: \thexLeft \t(%X)\n", hexLeft);
     				break;
     			case 3 :
-    				RS232_SendByte(SERIAL_PORT, hexRight);
+    				RS232_SendByte(serialPort, hexRight);
     				printf("\nSend robot command: \thexRight \t(%X)\n", hexRight);
     				break;
     			case 11 :
-    				RS232_SendByte(SERIAL_PORT, hexStraightStation);
+    				RS232_SendByte(serialPort, hexStraightStation);
     				printf("\nSend robot command: \thexStraightStation (%X)\n", hexStraightStation);
     				removeWaypointNextStep = 1;
     				break;
     			case 12 :
-    				RS232_SendByte(SERIAL_PORT, hexLeftStation);
+    				RS232_SendByte(serialPort, hexLeftStation);
     				printf("\nSend robot command: \thexLeftStation (%X)\n", hexLeftStation);
                     removeWaypointNextStep = 1;
     				break;
     			case 13 :
-    				RS232_SendByte(SERIAL_PORT, hexRightStation);
+    				RS232_SendByte(serialPort, hexRightStation);
     				printf("\nSend robot command: \thexRightStation (%X)\n", hexRightStation);
                     removeWaypointNextStep = 1;
     				break;
