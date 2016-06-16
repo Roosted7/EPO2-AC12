@@ -17,7 +17,6 @@ int serialPort, serialNotConnected = 1, robotDriving = 1, routeStep, waypointSte
 extern int robotDone;
 extern char challengeType;
 
-struct timeval stop, start;
 
 /* Empty the input buffer */
 void emptyBuf () {
